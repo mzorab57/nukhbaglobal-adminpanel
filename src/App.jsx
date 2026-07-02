@@ -1,8 +1,11 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedLayout from './components/layout/ProtectedLayout'
 import DashboardPage from './pages/DashboardPage'
+import EventsPage from './pages/EventsPage'
 import LoginPage from './pages/LoginPage'
+import LocationsPage from './pages/LocationsPage'
 import OrdersPage from './pages/OrdersPage'
+import ScansPage from './pages/ScansPage'
 import { AuthProvider, useAuth } from './lib/auth'
 
 function ProtectedRoute({ children }) {
@@ -57,7 +60,10 @@ function AppRoutes() {
         }
       >
         <Route index element={<DashboardPage />} />
+        <Route path="events" element={<EventsPage />} />
+        <Route path="locations" element={<LocationsPage />} />
         <Route path="orders" element={<OrdersPage />} />
+        <Route path="scans" element={<ScansPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

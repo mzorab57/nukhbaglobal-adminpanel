@@ -4,7 +4,10 @@ import { useAuth } from '../../lib/auth'
 
 const PAGE_TITLES = {
   '/dashboard': 'Dashboard Overview',
+  '/dashboard/events': 'Events & Tickets',
+  '/dashboard/locations': 'Locations Management',
   '/dashboard/orders': 'Orders & Payments',
+  '/dashboard/scans': 'Scan Reports',
 }
 
 export default function Topbar() {
