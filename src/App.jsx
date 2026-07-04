@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedLayout from './components/layout/ProtectedLayout'
 import DashboardPage from './pages/DashboardPage'
 import EventsPage from './pages/EventsPage'
+import FeaturedContentPage from './pages/FeaturedContentPage'
 import LoginPage from './pages/LoginPage'
 import LocationsPage from './pages/LocationsPage'
 import OrdersPage from './pages/OrdersPage'
@@ -64,6 +65,7 @@ function AppRoutes() {
         <Route path="locations" element={<LocationsPage />} />
         <Route path="orders" element={<OrdersPage />} />
         <Route path="scans" element={<ScansPage />} />
+        <Route path="featured" element={<FeaturedContentPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

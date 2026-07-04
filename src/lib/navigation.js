@@ -39,8 +39,8 @@ export const primaryNavigation = [
     href: '/dashboard/scans',
   },
   {
-    title: 'Featured Content',
-    description: 'Control discovery and spotlight content',
+    title: 'Website Media',
+    description: 'Manage banners, sliders, and visuals',
     icon: Sparkles,
     href: '/dashboard/featured',
   },

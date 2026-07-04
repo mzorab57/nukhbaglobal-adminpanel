@@ -23,16 +23,17 @@ export const API_BASE_URL = resolveApiBaseUrl()
 
 export async function apiRequest(path, options = {}) {
   const { method = 'GET', token = null, headers = {}, body } = options
+  const isFormData = typeof FormData !== 'undefined' && body instanceof FormData
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers: {
       Accept: 'application/json',
-      ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...(!isFormData && body !== undefined ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
   })
 
   let payload = null
@@ -43,7 +44,7 @@ export async function apiRequest(path, options = {}) {
     payload = null
   }
 
-  if (!response.ok || payload?.success === false) {
+  if (!response.ok || payload?.status === false || payload?.success === false) {
     throw new ApiError(
       payload?.message || 'Request failed.',
       response.status,
@@ -52,4 +53,18 @@ export async function apiRequest(path, options = {}) {
   }
 
   return payload
+}
+
+export async function uploadImage(token, file, directory = 'media') {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('directory', directory)
+
+  const response = await apiRequest('/api/admin/uploads/image', {
+    method: 'POST',
+    token,
+    body: formData,
+  })
+
+  return response.data
 }

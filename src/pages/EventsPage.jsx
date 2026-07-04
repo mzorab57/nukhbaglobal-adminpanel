@@ -10,8 +10,9 @@ import {
   Ticket,
   Trash2,
 } from 'lucide-react'
+import ImageUploadField from '../components/ui/ImageUploadField'
 import StatCard from '../components/ui/StatCard'
-import { ApiError, apiRequest } from '../lib/api'
+import { ApiError, apiRequest, uploadImage } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatCurrency, formatDateTime, formatNumber } from '../lib/format'
 
@@ -172,6 +173,10 @@ export default function EventsPage() {
   const [detailLoading, setDetailLoading] = useState(false)
   const [savingEvent, setSavingEvent] = useState(false)
   const [savingTicket, setSavingTicket] = useState(false)
+  const [uploadingEventImage, setUploadingEventImage] = useState({
+    desktop: false,
+    mobile: false,
+  })
   const [deletingEventId, setDeletingEventId] = useState(null)
   const [deletingTicketId, setDeletingTicketId] = useState(null)
   const [error, setError] = useState('')
@@ -309,6 +314,35 @@ export default function EventsPage() {
       ...current,
       [field]: event.target.value,
     }))
+  }
+
+  const handleEventImageUpload = async (field, file) => {
+    if (!token) {
+      return
+    }
+
+    setUploadingEventImage((current) => ({
+      ...current,
+      [field]: true,
+    }))
+    setError('')
+
+    try {
+      const uploaded = await uploadImage(token, file, 'events')
+      const nextValue = uploaded?.url || ''
+
+      setEventForm((current) => ({
+        ...current,
+        [field === 'desktop' ? 'desktop_image' : 'mobile_image']: nextValue,
+      }))
+    } catch (requestError) {
+      handleRequestError(requestError, 'Failed to upload event image.')
+    } finally {
+      setUploadingEventImage((current) => ({
+        ...current,
+        [field]: false,
+      }))
+    }
   }
 
   const handleApplyFilters = async (event) => {
@@ -861,22 +895,22 @@ export default function EventsPage() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Desktop Image URL</span>
-                  <input
-                    value={eventForm.desktop_image}
-                    onChange={handleEventFormChange('desktop_image')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Mobile Image URL</span>
-                  <input
-                    value={eventForm.mobile_image}
-                    onChange={handleEventFormChange('mobile_image')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
+                <ImageUploadField
+                  label="Desktop Image"
+                  value={eventForm.desktop_image}
+                  uploading={uploadingEventImage.desktop}
+                  onFileSelect={(file) => handleEventImageUpload('desktop', file)}
+                  onClear={() => setEventForm((current) => ({ ...current, desktop_image: '' }))}
+                  hint="Upload the wide desktop image used in event cards and hero sections."
+                />
+                <ImageUploadField
+                  label="Mobile Image"
+                  value={eventForm.mobile_image}
+                  uploading={uploadingEventImage.mobile}
+                  onFileSelect={(file) => handleEventImageUpload('mobile', file)}
+                  onClear={() => setEventForm((current) => ({ ...current, mobile_image: '' }))}
+                  hint="Upload the mobile version for responsive event layouts."
+                />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -907,11 +941,17 @@ export default function EventsPage() {
               <div className="flex flex-wrap gap-3">
                 <button
                   type="submit"
-                  disabled={savingEvent}
+                  disabled={savingEvent || uploadingEventImage.desktop || uploadingEventImage.mobile}
                   className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <Save size={16} />
-                  {savingEvent ? 'Saving...' : eventMode === 'edit' ? 'Save event' : 'Create event'}
+                  {savingEvent
+                    ? 'Saving...'
+                    : uploadingEventImage.desktop || uploadingEventImage.mobile
+                      ? 'Uploading...'
+                      : eventMode === 'edit'
+                        ? 'Save event'
+                        : 'Create event'}
                 </button>
                 {eventMode === 'edit' && selectedEventId && (
                   <button
