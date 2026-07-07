@@ -3,6 +3,7 @@ import { ArrowRight, ShieldCheck } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import BrandMark from '../components/ui/BrandMark'
 import TextInput from '../components/ui/TextInput'
+import { getDefaultRoute } from '../lib/access'
 import { useAuth } from '../lib/auth'
 
 export default function LoginPage() {
@@ -28,8 +29,8 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      await login(form)
-      navigate('/dashboard', { replace: true })
+      const authenticatedUser = await login(form)
+      navigate(getDefaultRoute(authenticatedUser), { replace: true })
     } catch (submissionError) {
       setError(submissionError.message)
     } finally {

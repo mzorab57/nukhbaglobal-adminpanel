@@ -2,9 +2,11 @@ import {
   ChartColumnBig,
   CreditCard,
   MapPinned,
+  Receipt,
   ScanLine,
   Sparkles,
   Ticket,
+  Users,
 } from 'lucide-react'
 
 export const primaryNavigation = [
@@ -21,6 +23,12 @@ export const primaryNavigation = [
     href: '/dashboard/orders',
   },
   {
+    title: 'Office Sales',
+    description: 'Cash tickets, QR passes, and print',
+    icon: Receipt,
+    href: '/dashboard/office-sales',
+  },
+  {
     title: 'Events & Tickets',
     description: 'Manage events, pricing, and inventory',
     icon: Ticket,
@@ -31,6 +39,12 @@ export const primaryNavigation = [
     description: 'Countries, cities, and sub-events',
     icon: MapPinned,
     href: '/dashboard/locations',
+  },
+  {
+    title: 'Team / Users',
+    description: 'Create and manage staff accounts',
+    icon: Users,
+    href: '/dashboard/users',
   },
   {
     title: 'Scan Reports',

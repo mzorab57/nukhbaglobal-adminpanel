@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Eye, Filter, RefreshCcw, RotateCcw, Search, XCircle } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Eye, Filter, Printer, RefreshCcw, RotateCcw, Search, XCircle } from 'lucide-react'
 import { apiRequest, ApiError } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatCurrency, formatDateTime, formatNumber } from '../lib/format'
+import { openPrintablePassesWindow } from '../lib/printablePasses'
 import StatCard from '../components/ui/StatCard'
 
 const INITIAL_FILTERS = {
@@ -49,7 +50,10 @@ export default function OrdersPage() {
   const [loading, setLoading] = useState(true)
   const [detailsLoading, setDetailsLoading] = useState(false)
   const [submittingAction, setSubmittingAction] = useState('')
+  const [printingPasses, setPrintingPasses] = useState(false)
   const [error, setError] = useState('')
+  const isDrawerOpen = detailsLoading || Boolean(selectedOrder)
+  const detailsRequestRef = useRef(0)
 
   const loadOrders = async ({ silent = false, nextPage = page } = {}) => {
     if (!token) {
@@ -85,15 +89,26 @@ export default function OrdersPage() {
       return
     }
 
+    const requestId = detailsRequestRef.current + 1
+    detailsRequestRef.current = requestId
     setDetailsLoading(true)
 
     try {
       const response = await apiRequest(`/api/admin/orders/${orderId}`, {
         token,
       })
+
+      if (detailsRequestRef.current !== requestId) {
+        return
+      }
+
       setSelectedOrder(response.data)
       setSelectedOrderId(orderId)
     } catch (requestError) {
+      if (detailsRequestRef.current !== requestId) {
+        return
+      }
+
       if (requestError instanceof ApiError && requestError.status === 401) {
         logout()
         return
@@ -101,7 +116,9 @@ export default function OrdersPage() {
 
       setError(requestError.message || 'Failed to load order details.')
     } finally {
-      setDetailsLoading(false)
+      if (detailsRequestRef.current === requestId) {
+        setDetailsLoading(false)
+      }
     }
   }
 
@@ -109,6 +126,17 @@ export default function OrdersPage() {
     loadOrders({ nextPage: 1 })
     setPage(1)
   }, [token])
+
+  useEffect(() => {
+    if (isDrawerOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isDrawerOpen])
 
   const handleFilterChange = (field) => (event) => {
     setFilters((current) => ({
@@ -181,6 +209,69 @@ export default function OrdersPage() {
     }
   }
 
+  const handleIssuedTicketAction = async (ticket, action) => {
+    if (!selectedOrder?.order?.id || !token || !ticket?.id) {
+      return
+    }
+
+    const reason = window.prompt(`Optional ${action} reason for ${ticket.ticketCode}:`) ?? ''
+    setSubmittingAction(`${action}-${ticket.id}`)
+
+    try {
+      await apiRequest(`/api/admin/orders/${selectedOrder.order.id}/tickets/${ticket.id}/${action}`, {
+        method: 'POST',
+        token,
+        body: reason.trim() ? { reason: reason.trim() } : {},
+      })
+
+      await Promise.all([
+        loadOrders({ silent: true, nextPage: page }),
+        loadOrderDetails(selectedOrder.order.id),
+      ])
+    } catch (requestError) {
+      if (requestError instanceof ApiError && requestError.status === 401) {
+        logout()
+        return
+      }
+
+      setError(requestError.message || `Failed to ${action} ticket.`)
+    } finally {
+      setSubmittingAction('')
+    }
+  }
+
+  const closeDrawer = () => {
+    detailsRequestRef.current += 1
+    setDetailsLoading(false)
+    setSelectedOrder(null)
+    setSelectedOrderId(null)
+  }
+
+  const handlePrintablePasses = async () => {
+    if (!selectedOrder?.order?.id || !token) {
+      return
+    }
+
+    setPrintingPasses(true)
+
+    try {
+      const response = await apiRequest(`/api/admin/orders/${selectedOrder.order.id}/printable-passes`, {
+        token,
+      })
+
+      await openPrintablePassesWindow(response.data)
+    } catch (requestError) {
+      if (requestError instanceof ApiError && requestError.status === 401) {
+        logout()
+        return
+      }
+
+      setError(requestError.message || 'Failed to open printable passes.')
+    } finally {
+      setPrintingPasses(false)
+    }
+  }
+
   const summaryCards = useMemo(() => {
     const items = ordersPayload?.items ?? []
 
@@ -191,28 +282,16 @@ export default function OrdersPage() {
 
     return [
       {
-        eyebrow: 'Visible',
-        title: 'Orders In View',
-        value: formatNumber(items.length),
-        delta: `${formatNumber(ordersPayload?.pagination?.total || 0)} total`,
+        eyebrow: 'Total',
+        title: 'Total Orders',
+        value: formatNumber(ordersPayload?.pagination?.total || 0),
+        delta: 'Total orders',
       },
       {
         eyebrow: 'Volume',
         title: 'Visible GMV',
         value: formatCurrency(totalAmount),
         delta: `${formatNumber(paidCount)} paid/completed`,
-      },
-      {
-        eyebrow: 'Attention',
-        title: 'Pending Orders',
-        value: formatNumber(pendingCount),
-        delta: 'Need follow-up',
-      },
-      {
-        eyebrow: 'Recovery',
-        title: 'Refunded Payments',
-        value: formatNumber(refundedCount),
-        delta: 'Current result set',
       },
     ]
   }, [ordersPayload])
@@ -225,19 +304,10 @@ export default function OrdersPage() {
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55">Orders Module</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">Orders, payments, refunds, and detail review.</h1>
-            <p className="mt-3 text-sm leading-7 text-zinc-400">
-              This module is wired to backend reporting endpoints with filters, live order details, and guarded admin actions.
-            </p>
+            <h1 className="mt-3 text-3xl font-semibold text-white">Orders, payments and detail review.</h1>
+           
           </div>
-          <button
-            type="button"
-            onClick={() => loadOrders({ silent: true, nextPage: page })}
-            className="inline-flex items-center gap-2 self-start rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200 transition hover:bg-white/8"
-          >
-            <RefreshCcw size={16} />
-            Refresh list
-          </button>
+     
         </div>
       </section>
 
@@ -247,13 +317,13 @@ export default function OrdersPage() {
         </section>
       )}
 
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2">
         {summaryCards.map((card) => (
           <StatCard key={card.title} eyebrow={card.eyebrow} title={card.title} value={card.value} delta={card.delta} />
         ))}
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+      <section className="space-y-6">
         <div className="space-y-6">
           <form onSubmit={handleApplyFilters} className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
             <div className="flex items-center gap-2 text-sm font-medium text-white">
@@ -261,15 +331,15 @@ export default function OrdersPage() {
               Filters
             </div>
             <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <label className="space-y-2 text-sm text-zinc-300 xl:col-span-3">
+              <label className="space-y-2 text-sm text-zinc-300 md:col-span-2 xl:col-span-3">
                 <span>Search</span>
                 <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
-                  <Search size={16} className="text-zinc-500" />
+                  <Search size={16} className="text-zinc-500 shrink-0" />
                   <input
                     value={filters.q}
                     onChange={handleFilterChange('q')}
                     placeholder="Order number, customer, email, phone, gateway id"
-                    className="w-full bg-transparent text-white outline-none placeholder:text-zinc-500"
+                    className="w-full min-w-0 bg-transparent text-white outline-none placeholder:text-zinc-500"
                   />
                 </div>
               </label>
@@ -404,7 +474,7 @@ export default function OrdersPage() {
             </div>
 
             {pagination && (
-              <div className="flex items-center justify-between px-5 py-4 text-sm text-zinc-400">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-5 py-4 text-sm text-zinc-400">
                 <p>{formatNumber(pagination.total)} total orders</p>
                 <div className="flex gap-3">
                   <button
@@ -437,17 +507,33 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        <aside className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
+      </section>
+
+      <div
+        className={`fixed inset-0 z-40 transition-all duration-300 ${
+          isDrawerOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      >
+        <button
+          type="button"
+          aria-label="Close order drawer"
+          onClick={closeDrawer}
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        />
+
+        <aside
+          className={`panel-surface panel-border panel-shadow absolute right-0 top-0 h-full w-full max-w-2xl overflow-y-auto border-l border-white/10 p-5 transition-transform duration-300 ease-out ${
+            isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Order Drawer</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Details & Actions</h2>
             </div>
-            {selectedOrder && (
-              <button type="button" onClick={() => setSelectedOrder(null)} className="rounded-2xl border border-white/8 bg-white/4 p-2 text-zinc-300">
-                <XCircle size={16} />
-              </button>
-            )}
+            <button type="button" onClick={closeDrawer} className="rounded-2xl border border-white/8 bg-white/4 p-2 text-zinc-300">
+              <XCircle size={16} />
+            </button>
           </div>
 
           {!selectedOrder && !detailsLoading && (
@@ -506,7 +592,12 @@ export default function OrdersPage() {
                   {selectedOrder.items.map((item) => (
                     <div key={item.id} className="rounded-2xl border border-white/6 bg-black/10 px-4 py-3">
                       <p className="text-sm font-medium text-white">{item.ticketTitleText}</p>
-                      <p className="mt-1 text-xs text-zinc-500">{item.event.titleText} · {formatDateTime(item.event.date)}</p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        {item.city?.name || 'No city'}{item.subEvent?.titleText ? ` · ${item.subEvent.titleText}` : ''} · {formatDateTime(item.event.date)}
+                      </p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        {item.event.titleText}
+                      </p>
                       <p className="mt-2 text-xs text-zinc-400">
                         {formatNumber(item.quantity)} x {formatCurrency(item.pricePerItem)} = {formatCurrency(item.lineAmount)}
                       </p>
@@ -532,6 +623,34 @@ export default function OrdersPage() {
                       <p className="mt-2 text-xs text-zinc-500">
                         Passenger: {ticket.passengerName || 'Unassigned'}
                       </p>
+                      <p className="mt-1 text-xs text-zinc-500">
+                        {ticket.city?.name || 'No city'}{ticket.subEvent?.titleText ? ` · ${ticket.subEvent.titleText}` : ''} · {formatCurrency(ticket.pricePerItem || 0)}
+                      </p>
+                      {ticket.scannedAt ? (
+                        <p className="mt-1 text-xs text-zinc-500">
+                          Scanned: {formatDateTime(ticket.scannedAt)}
+                        </p>
+                      ) : null}
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <button
+                          type="button"
+                          onClick={() => handleIssuedTicketAction(ticket, 'cancel')}
+                          disabled={submittingAction !== '' || !ticket.canCancel}
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-2 text-xs font-medium text-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <XCircle size={14} />
+                          {submittingAction === `cancel-${ticket.id}` ? 'Cancelling...' : 'Cancel ticket'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleIssuedTicketAction(ticket, 'refund')}
+                          disabled={submittingAction !== '' || !ticket.canRefund}
+                          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-2 text-xs font-medium text-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <RotateCcw size={14} />
+                          {submittingAction === `refund-${ticket.id}` ? 'Refunding...' : 'Refund ticket'}
+                        </button>
+                      </div>
                     </div>
                   )) : (
                     <p className="text-sm text-zinc-500">No issued tickets for this order.</p>
@@ -544,28 +663,34 @@ export default function OrdersPage() {
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   <button
                     type="button"
-                    onClick={() => handleAction('cancel')}
-                    disabled={submittingAction !== ''}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={handlePrintablePasses}
+                    disabled={submittingAction !== '' || printingPasses || selectedOrder.issuedTickets.length === 0}
+                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-emerald-300/20 bg-emerald-500/10 px-4 py-3 text-sm font-medium text-emerald-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <XCircle size={16} />
-                    {submittingAction === 'cancel' ? 'Cancelling...' : 'Cancel order'}
+                    <Printer size={16} />
+                    {printingPasses ? 'Opening...' : 'Print / Save PDF'}
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAction('refund')}
-                    disabled={submittingAction !== ''}
-                    className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm font-medium text-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <RotateCcw size={16} />
-                    {submittingAction === 'refund' ? 'Refunding...' : 'Refund order'}
-                  </button>
+                  {selectedOrder.issuedTickets.length === 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => handleAction('cancel')}
+                      disabled={submittingAction !== ''}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm font-medium text-amber-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <XCircle size={16} />
+                      {submittingAction === 'cancel' ? 'Cancelling...' : 'Cancel order'}
+                    </button>
+                  ) : (
+                    <div className="">
+                    
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           )}
         </aside>
-      </section>
+      </div>
     </div>
   )
 }

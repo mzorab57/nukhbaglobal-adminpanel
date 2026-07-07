@@ -110,12 +110,12 @@ export default function DashboardPage() {
         value: formatNumber(overview.tickets?.used),
         delta: `${formatNumber(overview.tickets?.valid)} valid`,
       },
-      {
-        eyebrow: 'Payments',
-        title: 'Refunded Payments',
-        value: formatNumber(overview.payments?.refunded),
-        delta: `${formatCurrency(overview.payments?.pendingAmount)} pending`,
-      },
+      // {
+      //   eyebrow: 'Payments',
+      //   title: 'Refunded Payments',
+      //   value: formatNumber(overview.payments?.refunded),
+      //   delta: `${formatCurrency(overview.payments?.pendingAmount)} pending`,
+      // },
     ]
   }, [overview])
 
@@ -125,7 +125,7 @@ export default function DashboardPage() {
     }
 
     return [
-      { label: 'Pending', value: overview.orders.pending },
+      // { label: 'Pending', value: overview.orders.pending },
       { label: 'Paid', value: overview.orders.paid },
       { label: 'Completed', value: overview.orders.completed },
       { label: 'Cancelled', value: overview.orders.cancelled },
@@ -150,30 +150,13 @@ export default function DashboardPage() {
       <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-6 lg:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.4em] text-amber-100/55">Phase 2 Overview</p>
+            
             <h1 className="mt-4 text-3xl font-semibold leading-tight text-white lg:text-4xl">
-              Live operational dashboard for NukhbaGlobal administration.
+              NukhbaGlobal administration.
             </h1>
-            <p className="mt-4 text-sm leading-7 text-zinc-400 lg:text-base">
-              Secure backend authentication and overview metrics are now active. This screen reads live order, payment, and ticket activity from the API.
-            </p>
+          
           </div>
-          <div className="rounded-3xl border border-amber-200/10 bg-amber-300/8 p-5">
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-100/60">Status</p>
-            <p className="mt-3 text-2xl font-semibold text-white">Live Data Ready</p>
-            <p className="mt-2 text-sm leading-6 text-zinc-300">
-              Overview, recent orders, and summary cards are wired to backend reporting.
-            </p>
-            <button
-              type="button"
-              onClick={() => loadOverview({ silent: true })}
-              disabled={refreshing}
-              className="mt-4 inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/6 px-4 py-2 text-sm text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <RefreshCcw size={16} className={refreshing ? 'animate-spin' : ''} />
-              {refreshing ? 'Refreshing...' : 'Refresh'}
-            </button>
-          </div>
+         
         </div>
       </section>
 
@@ -189,7 +172,7 @@ export default function DashboardPage() {
         </section>
       )}
 
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {statCards.map((card) => (
           <StatCard
             key={card.title}

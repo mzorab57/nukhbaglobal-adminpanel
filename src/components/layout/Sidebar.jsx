@@ -4,7 +4,7 @@ import BrandMark from '../ui/BrandMark'
 
 export default function Sidebar() {
   return (
-    <aside className="panel-surface panel-border panel-shadow hidden h-[calc(100vh-2rem)] w-[320px] shrink-0 rounded-[2rem] p-6 lg:flex lg:flex-col">
+    <aside className="panel-surface panel-border panel-shadow hidden h-[calc(100vh-2rem)] lg:h-[calc(100vh-3rem)] w-[320px] shrink-0 rounded-[2rem] p-6 lg:flex lg:flex-col sticky top-4 lg:top-6">
       <BrandMark />
       <div className="mt-10 space-y-2">
         {primaryNavigation.map((item) => {
