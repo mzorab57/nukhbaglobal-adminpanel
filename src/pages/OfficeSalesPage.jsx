@@ -221,7 +221,7 @@ export default function OfficeSalesPage() {
 
   return (
     <div className="space-y-6 text-white">
-      <section className="panel-surface  panel-shadow rounded-[2rem] p-6">
+      <section className="panel-surface  panel-shadow rounded-4xl p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55"></p>
@@ -233,7 +233,7 @@ export default function OfficeSalesPage() {
       </section>
 
       {error ? (
-        <section className="rounded-[2rem] border border-rose-400/20 bg-rose-500/8 px-5 py-4 text-sm text-rose-100">
+        <section className="rounded-4xl border border-rose-400/20 bg-rose-500/8 px-5 py-4 text-sm text-rose-100">
           {error}
         </section>
       ) : null}
@@ -246,7 +246,7 @@ export default function OfficeSalesPage() {
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <form onSubmit={handleCreateCashSale} className="space-y-6">
-          <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+          <div className="panel-surface panel-border panel-shadow rounded-4xl p-6">
             <div className="flex items-center gap-3">
               <ShoppingBag className="text-amber-100" size={18} />
               <div>
@@ -317,7 +317,7 @@ export default function OfficeSalesPage() {
             </div>
           </div>
 
-          <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+          <div className="panel-surface panel-border panel-shadow rounded-4xl p-6">
             <div className="flex items-center gap-3">
               <Wallet className="text-amber-100" size={18} />
               <div>
@@ -368,7 +368,7 @@ export default function OfficeSalesPage() {
               <button
                 type="submit"
                 disabled={creatingSale || selectedItems.length === 0}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900 transition disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900 transition disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <Receipt size={16} />
                 {creatingSale ? 'Creating cash sale...' : 'Create cash sale & issue tickets'}
@@ -378,7 +378,7 @@ export default function OfficeSalesPage() {
         </form>
 
         <aside className="space-y-6">
-          <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+          <div className="panel-surface panel-border panel-shadow rounded-4xl p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Step 3</p>
@@ -450,7 +450,7 @@ export default function OfficeSalesPage() {
             )}
           </div>
 
-          {/* <div className="panel-surface panel-border rounded-[2rem] p-6">
+          {/* <div className="panel-surface panel-border rounded-4xl p-6">
             <div className="flex items-center gap-3">
               <Ticket className="text-amber-100" size={18} />
               <div>

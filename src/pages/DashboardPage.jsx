@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,
-  ArrowUpRight,
   CircleDollarSign,
   ScanLine,
   Ticket,
-  Users,
+  Wallet,
 } from 'lucide-react'
 import StatCard from '../components/ui/StatCard'
 import { useAuth } from '../lib/auth'
@@ -32,7 +31,7 @@ const spotlightCards = [
 
 function LoadingBlock() {
   return (
-    <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+    <div className="panel-surface panel-border panel-shadow rounded-4xl p-6">
       <div className="animate-pulse space-y-4">
         <div className="h-4 w-28 rounded-full bg-white/8" />
         <div className="h-8 w-72 rounded-full bg-white/8" />
@@ -89,22 +88,34 @@ export default function DashboardPage() {
 
     return [
       {
-        eyebrow: 'Net',
+        // eyebrow: 'Revenue',
         title: 'Net Revenue',
-        value: formatCurrency(overview.payments?.successfulAmount),
-        delta: `${formatNumber(overview.payments?.success)} paid`,
+        value: formatCurrency(overview.finance?.netRevenue),
+        // delta: `${formatNumber(overview.payments?.success)} paid`,
       },
       {
-        eyebrow: 'Orders',
+        // eyebrow: 'Bottom Line',
+        title: 'Net After Expenses',
+        value: formatCurrency(overview.finance?.netAfterExpenses),
+        // delta: 'Revenue minus costs',
+      },
+      {
+        // eyebrow: 'Costs',
+        title: 'Total Expenses',
+        value: formatCurrency(overview.expenses?.totalAmount),
+        // delta: `${formatNumber(overview.expenses?.total)} records`,
+      },
+      {
+        // eyebrow: 'Orders',
         title: 'Total Orders',
         value: formatNumber(overview.orders?.total),
-        delta: `${formatNumber(overview.orders?.pending)} pending`,
+        // delta: `${formatNumber(overview.orders?.pending)} pending`,
       },
       {
-        eyebrow: 'Attendance',
+        // eyebrow: 'Attendance',
         title: 'Tickets Used',
         value: formatNumber(overview.tickets?.used),
-        delta: `${formatNumber(overview.tickets?.valid)} valid`,
+        // delta: `${formatNumber(overview.tickets?.valid)} valid`,
       },
       // {
       //   eyebrow: 'Payments',
@@ -114,6 +125,9 @@ export default function DashboardPage() {
       // },
     ]
   }, [overview])
+
+  const firstRowStatCards = statCards.slice(0, 2)
+  const secondRowStatCards = statCards.slice(2)
 
   const orderMix = useMemo(() => {
     if (!overview?.orders) {
@@ -132,8 +146,13 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <LoadingBlock />
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, index) => (
+        <div className="grid gap-5 lg:grid-cols-2">
+          {Array.from({ length: 2 }).map((_, index) => (
+            <LoadingBlock key={`top-${index}`} />
+          ))}
+        </div>
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, index) => (
             <LoadingBlock key={index} />
           ))}
         </div>
@@ -143,11 +162,11 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-6 lg:p-8">
+      <section className="panel-surface  panel-shadow rounded-4xl p-6 lg:p-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             
-            <h1 className="mt-4 text-3xl font-semibold leading-tight text-white lg:text-4xl">
+            <h1 className="mt-4 text-3xl font-semibold leading-tight text-amber-100/70 ">
               NukhbaGlobal administration.
             </h1>
           
@@ -157,7 +176,7 @@ export default function DashboardPage() {
       </section>
 
       {error && (
-        <section className="rounded-[2rem] border border-rose-400/20 bg-rose-500/8 px-5 py-4 text-rose-100">
+        <section className="rounded-4xl border border-rose-400/20 bg-rose-500/8 px-5 py-4 text-rose-100">
           <div className="flex items-start gap-3">
             <AlertCircle size={18} className="mt-0.5 shrink-0" />
             <div>
@@ -168,8 +187,20 @@ export default function DashboardPage() {
         </section>
       )}
 
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {statCards.map((card) => (
+      <section className="grid gap-5 lg:grid-cols-2">
+        {firstRowStatCards.map((card) => (
+          <StatCard
+            key={card.title}
+            eyebrow={card.eyebrow}
+            title={card.title}
+            value={card.value}
+            delta={card.delta}
+          />
+        ))}
+      </section>
+
+      <section className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {secondRowStatCards.map((card) => (
           <StatCard
             key={card.title}
             eyebrow={card.eyebrow}
@@ -181,7 +212,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+        <div className="panel-surface panel-border panel-shadow rounded-4xl p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Recent Orders</p>
@@ -236,7 +267,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+          <div className="panel-surface panel-border panel-shadow rounded-4xl p-6">
             <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Order Mix</p>
             <h2 className="mt-3 text-2xl font-semibold text-white">Current status distribution</h2>
             <ul className="mt-5 space-y-4 text-sm leading-6 text-zinc-400">
@@ -251,10 +282,10 @@ export default function DashboardPage() {
               ))}
             </ul>
           </div>
-          <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+          <div className="panel-surface panel-border panel-shadow rounded-4xl p-6">
             <div className="flex items-center gap-3">
               <div className="rounded-2xl bg-white/5 p-3 text-zinc-200">
-                <Users size={20} />
+                <Wallet size={20} />
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Payments Snapshot</p>
@@ -262,7 +293,10 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="mt-4 text-sm leading-6 text-zinc-400">
-              Net: {formatCurrency(overview?.payments?.successfulAmount)} · Pending: {formatCurrency(overview?.payments?.pendingAmount)} · Failed: {formatNumber(overview?.payments?.failed)}
+              Revenue: {formatCurrency(overview?.finance?.netRevenue)} · Expenses: {formatCurrency(overview?.finance?.expenseAmount)} · After expenses: {formatCurrency(overview?.finance?.netAfterExpenses)}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-zinc-500">
+              Pending payments: {formatCurrency(overview?.payments?.pendingAmount)} · Failed payments: {formatNumber(overview?.payments?.failed)} · Expense records: {formatNumber(overview?.expenses?.total)}
             </p>
             <div className="mt-5 grid gap-3">
               {spotlightCards.map((card) => {

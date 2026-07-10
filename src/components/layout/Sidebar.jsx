@@ -7,8 +7,8 @@ export default function Sidebar({ mobile = false, onNavigate, className = '' }) 
     <aside
       className={`panel-surface panel-border panel-shadow ${
         mobile
-          ? 'flex h-full w-full flex-col rounded-none border-l border-white/10 p-4 sm:max-w-sm sm:rounded-l-[2rem] sm:p-5'
-          : 'sticky top-4 hidden h-[calc(100vh-2rem)] w-[320px] shrink-0 rounded-[2rem] p-6 lg:top-6 lg:flex lg:h-[calc(100vh-3rem)] lg:flex-col'
+          ? 'flex h-full w-full flex-col rounded-none border-l border-white/10 p-4 sm:max-w-sm sm:rounded-l-4xl sm:p-5'
+          : 'sticky top-4 hidden h-[calc(100vh-2rem)] w-[320px] shrink-0 rounded-4xl p-6 lg:top-6 lg:flex lg:h-[calc(100vh-3rem)] lg:flex-col'
       } ${className}`}
     >
       <BrandMark compact={mobile} />
@@ -20,11 +20,12 @@ export default function Sidebar({ mobile = false, onNavigate, className = '' }) 
             <NavLink
               key={item.title}
               to={item.href}
+              end={item.href === '/dashboard'}
               onClick={onNavigate}
               className={({ isActive }) =>
                 `block w-full rounded-2xl px-4 py-2 text-left transition  ${
                   isActive
-                    ? 'bg-gradient-to-r from-amber-300/18 to-white/5 text-white gold-ring'
+                    ? 'bg-linear-to-r from-amber-300/18 to-white/5 text-white gold-ring'
                     : 'text-zinc-400 hover:bg-white/4 hover:text-white'
                 }`
               }

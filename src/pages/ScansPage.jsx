@@ -219,7 +219,7 @@ export default function ScansPage() {
 
   return (
     <div className="space-y-6">
-      <section className="panel-surface  panel-shadow rounded-[2rem] p-6">
+      <section className="panel-surface  panel-shadow rounded-4xl p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="text-xs uppercase tracking-[0.35em] "></p>
@@ -231,7 +231,7 @@ export default function ScansPage() {
       </section>
 
       {error && (
-        <section className="rounded-[2rem] border border-rose-400/20 bg-rose-500/8 px-5 py-4 text-sm text-rose-100">
+        <section className="rounded-4xl border border-rose-400/20 bg-rose-500/8 px-5 py-4 text-sm text-rose-100">
           {error}
         </section>
       )}
@@ -244,7 +244,7 @@ export default function ScansPage() {
 
       <section className="space-y-6">
         <div className="space-y-6">
-          <form onSubmit={handleApplyFilters} className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
+          <form onSubmit={handleApplyFilters} className="panel-surface panel-border panel-shadow rounded-4xl p-5">
             <div className="flex items-center gap-2 text-sm font-medium text-white">
               <Filter size={16} />
               Filters
@@ -297,7 +297,7 @@ export default function ScansPage() {
               </label>
             </div>
             <div className="mt-5 flex flex-wrap gap-3">
-              <button type="submit" className="rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900">
+              <button type="submit" className="rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900">
                 Apply filters
               </button>
               <button type="button" onClick={handleResetFilters} className="rounded-2xl border border-white/8 bg-white/4 px-5 py-3 text-sm text-zinc-200">
@@ -306,7 +306,7 @@ export default function ScansPage() {
             </div>
           </form>
 
-          {/* <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
+          {/* <section className="panel-surface panel-border panel-shadow rounded-4xl p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Recent Overview</p>
@@ -346,7 +346,7 @@ export default function ScansPage() {
             </div>
           </section> */}
 
-          <div className="panel-surface panel-border panel-shadow overflow-hidden rounded-[2rem]">
+          <div className="panel-surface panel-border panel-shadow overflow-hidden rounded-4xl">
             <div className="flex items-center justify-between px-5 py-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Scan Log Table</p>

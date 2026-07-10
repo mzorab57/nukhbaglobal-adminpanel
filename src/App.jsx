@@ -60,7 +60,7 @@ function AppRoutes() {
   if (isBootstrapping) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#09090b] text-zinc-300">
-        <div className="panel-surface panel-border rounded-[2rem] px-6 py-5 text-sm tracking-[0.2em]">
+        <div className="panel-surface panel-border rounded-4xl px-6 py-5 text-sm tracking-[0.2em]">
           Loading secure session...
         </div>
       </div>

@@ -908,7 +908,7 @@ export default function LocationsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="panel-surface panel-shadow rounded-[2rem] p-4 sm:p-6">
+      <section className="panel-surface panel-shadow rounded-4xl p-4 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
             <h1 className="mt-2 text-2xl font-semibold text-amber-100/70 sm:mt-3 sm:text-3xl">Locations Module</h1>
@@ -920,7 +920,7 @@ export default function LocationsPage() {
       </section>
 
       {error && (
-        <section className="rounded-[2rem] border border-rose-400/20 bg-rose-500/8 px-5 py-4 text-sm text-rose-100">
+        <section className="rounded-4xl border border-rose-400/20 bg-rose-500/8 px-5 py-4 text-sm text-rose-100">
           {error}
         </section>
       )}
@@ -932,7 +932,7 @@ export default function LocationsPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-3">
-        <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-4 sm:p-5">
+        <section className="panel-surface panel-border panel-shadow rounded-4xl p-4 sm:p-5">
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Countries</p>
@@ -941,7 +941,7 @@ export default function LocationsPage() {
             <button
               type="button"
               onClick={openCountryCreate}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-2 text-xs font-semibold text-zinc-900 sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-2 text-xs font-semibold text-zinc-900 sm:w-auto"
             >
               <Plus size={14} />
               New
@@ -972,7 +972,7 @@ export default function LocationsPage() {
                 <option value="1">Active</option>
                 <option value="0">Hidden</option>
               </select>
-              <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900 md:w-auto">
+              <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900 md:w-auto">
                 <Filter size={15} />
                 Apply
               </button>
@@ -1047,7 +1047,7 @@ export default function LocationsPage() {
           </div>
         </section>
 
-        <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-4 sm:p-5">
+        <section className="panel-surface panel-border panel-shadow rounded-4xl p-4 sm:p-5">
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Cities</p>
@@ -1056,7 +1056,7 @@ export default function LocationsPage() {
             <button
               type="button"
               onClick={openCityCreate}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-2 text-xs font-semibold text-zinc-900 sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-2 text-xs font-semibold text-zinc-900 sm:w-auto"
             >
               <Plus size={14} />
               New
@@ -1095,7 +1095,7 @@ export default function LocationsPage() {
                 <option value="1">Active</option>
                 <option value="0">Hidden</option>
               </select>
-              <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900 md:w-auto">
+              <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900 md:w-auto">
                 <Filter size={15} />
                 Apply
               </button>
@@ -1168,7 +1168,7 @@ export default function LocationsPage() {
           </div>
         </section>
 
-        <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-4 sm:p-5">
+        <section className="panel-surface panel-border panel-shadow rounded-4xl p-4 sm:p-5">
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Sub-Events</p>
@@ -1177,7 +1177,7 @@ export default function LocationsPage() {
             <button
               type="button"
               onClick={openSubEventCreate}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-2 text-xs font-semibold text-zinc-900 sm:w-auto"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-2 text-xs font-semibold text-zinc-900 sm:w-auto"
             >
               <Plus size={14} />
               New
@@ -1219,7 +1219,7 @@ export default function LocationsPage() {
                   </option>
                 ))}
               </select>
-              <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900 md:w-auto">
+              <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900 md:w-auto">
                 <Filter size={15} />
                 Apply
               </button>

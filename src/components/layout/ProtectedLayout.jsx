@@ -43,7 +43,7 @@ export default function ProtectedLayout() {
       <div className="mx-auto flex max-w-[1600px] gap-6">
         <Sidebar />
         <div className="flex min-w-0 min-h-[calc(100vh-2rem)] flex-1 flex-col gap-5">
-          <div className="panel-surface panel-border panel-shadow flex items-center justify-between rounded-[2rem] px-5 py-4 lg:hidden">
+          <div className="panel-surface panel-border panel-shadow flex items-center justify-between rounded-4xl px-5 py-4 lg:hidden">
             <div className="min-w-0">
               <BrandMark compact />
             </div>
@@ -59,7 +59,7 @@ export default function ProtectedLayout() {
           <main className="flex-1 min-w-0">
             <Outlet />
           </main>
-          <div className="panel-surface panel-border flex flex-col gap-4 rounded-[2rem] px-4 py-4 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="panel-surface panel-border flex flex-col gap-4 rounded-4xl px-4 py-4 text-sm text-zinc-400 sm:flex-row sm:items-center sm:justify-between sm:px-5">
             <Topbar />
             <button
               type="button"
@@ -91,7 +91,7 @@ export default function ProtectedLayout() {
           }`}
         >
           <div className="flex h-full flex-col">
-            <div className="panel-surface panel-border mx-4 mt-4 flex items-center justify-between rounded-[2rem] px-4 py-4 sm:mx-5">
+            <div className="panel-surface panel-border mx-4 mt-4 flex items-center justify-between rounded-4xl px-4 py-4 sm:mx-5">
               <BrandMark compact />
               <button
                 type="button"
@@ -105,7 +105,7 @@ export default function ProtectedLayout() {
 
             <Sidebar mobile onNavigate={closeMobileMenu} className="mx-4 mt-3 min-h-0 flex-1 sm:mx-5" />
 
-            <div className="panel-surface panel-border mx-4 mb-4 mt-3 rounded-[2rem] px-4 py-4 sm:mx-5">
+            <div className="panel-surface panel-border mx-4 mb-4 mt-3 rounded-4xl px-4 py-4 sm:mx-5">
               <button
                 type="button"
                 onClick={handleLogout}

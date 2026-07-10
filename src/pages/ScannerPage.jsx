@@ -486,7 +486,7 @@ export default function ScannerPage() {
     >
       <div className="grid-glow fixed inset-0 -z-10 opacity-40" />
       <div className={`${isFocusMode ? 'mx-auto max-w-6xl space-y-4' : 'mx-auto max-w-[1580px] space-y-6'}`}>
-        <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-6 lg:p-8">
+        <section className="panel-surface panel-border panel-shadow rounded-4xl p-6 lg:p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55">Scanner Console</p>
@@ -560,7 +560,7 @@ export default function ScannerPage() {
 
         <section className={`${isFocusMode ? 'grid gap-4' : 'grid gap-6 xl:grid-cols-[1.02fr_0.98fr]'}`}>
           <div className="space-y-6">
-            <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+            <div className="panel-surface panel-border panel-shadow rounded-4xl p-6">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Camera Reader</p>
@@ -571,7 +571,7 @@ export default function ScannerPage() {
                     type="button"
                     onClick={startCamera}
                     disabled={cameraActive}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900 transition disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900 transition disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <Camera size={16} />
                     Start camera
@@ -602,10 +602,10 @@ export default function ScannerPage() {
                   autoPlay
                   muted
                   playsInline
-                  className={`${isFocusMode ? 'aspect-[3/4] min-h-[68vh] sm:min-h-[72vh]' : 'aspect-[4/3]'} w-full bg-black object-cover`}
+                  className={`${isFocusMode ? 'aspect-3/4 min-h-[68vh] sm:min-h-[72vh]' : 'aspect-4/3'} w-full bg-black object-cover`}
                 />
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                  <div className={`${isFocusMode ? 'h-72 w-72 max-w-[78vw] max-h-[78vw]' : 'h-56 w-56'} flex items-center justify-center rounded-[2rem] border border-amber-200/35 bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.28)]`}>
+                  <div className={`${isFocusMode ? 'h-72 w-72 max-w-[78vw] max-h-[78vw]' : 'h-56 w-56'} flex items-center justify-center rounded-4xl border border-amber-200/35 bg-transparent shadow-[0_0_0_9999px_rgba(0,0,0,0.28)]`}>
                     <QrCode size={34} className="text-amber-100/80" />
                   </div>
                 </div>
@@ -620,7 +620,7 @@ export default function ScannerPage() {
               </p>
             </div>
 
-            <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+            <div className="panel-surface panel-border panel-shadow rounded-4xl p-6">
               <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Manual Backup</p>
               <h2 className="mt-2 text-2xl font-semibold text-white">Enter ticket code manually</h2>
               <div className="mt-5 flex flex-col gap-3 md:flex-row">
@@ -636,7 +636,7 @@ export default function ScannerPage() {
                   type="button"
                   onClick={() => previewTicket()}
                   disabled={loadingPreview || loadingConfirm}
-                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900 transition disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900 transition disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <ScanLine size={16} />
                   {loadingPreview ? 'Previewing...' : 'Preview ticket'}
@@ -655,7 +655,7 @@ export default function ScannerPage() {
             </div>
           </div>
 
-          <aside className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+          <aside className="panel-surface panel-border panel-shadow rounded-4xl p-6">
             <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Preview & Confirm</p>
             <h2 className="mt-2 text-2xl font-semibold text-white">Ticket admission drawer</h2>
 
@@ -727,7 +727,7 @@ export default function ScannerPage() {
                     type="button"
                     onClick={confirmTicket}
                     disabled={!previewResult.canScan || loadingConfirm}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-300 via-emerald-200 to-lime-200 px-5 py-3 text-sm font-semibold text-zinc-900 transition disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center gap-2 rounded-2xl bg-linear-to-r from-emerald-300 via-emerald-200 to-lime-200 px-5 py-3 text-sm font-semibold text-zinc-900 transition disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <CheckCircle2 size={16} />
                     {loadingConfirm ? 'Confirming...' : 'Confirm admission'}
