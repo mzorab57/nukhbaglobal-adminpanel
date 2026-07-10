@@ -3,7 +3,6 @@ import {
   AlertCircle,
   ArrowUpRight,
   CircleDollarSign,
-  RefreshCcw,
   ScanLine,
   Ticket,
   Users,
@@ -47,7 +46,6 @@ export default function DashboardPage() {
   const { token, logout } = useAuth()
   const [overview, setOverview] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState('')
 
   const loadOverview = async ({ silent = false } = {}) => {
@@ -56,7 +54,6 @@ export default function DashboardPage() {
     }
 
     if (silent) {
-      setRefreshing(true)
     } else {
       setLoading(true)
     }
@@ -78,7 +75,6 @@ export default function DashboardPage() {
       setError(requestError.message || 'Failed to load dashboard overview.')
     } finally {
       setLoading(false)
-      setRefreshing(false)
     }
   }
 
@@ -93,8 +89,8 @@ export default function DashboardPage() {
 
     return [
       {
-        eyebrow: 'Gross',
-        title: 'Successful Revenue',
+        eyebrow: 'Net',
+        title: 'Net Revenue',
         value: formatCurrency(overview.payments?.successfulAmount),
         delta: `${formatNumber(overview.payments?.success)} paid`,
       },
@@ -191,13 +187,7 @@ export default function DashboardPage() {
               <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Recent Orders</p>
               <h2 className="mt-3 text-2xl font-semibold text-white">Latest activity feed</h2>
             </div>
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/8 bg-white/4 px-4 py-2 text-sm text-zinc-200 transition hover:bg-white/8"
-            >
-              Orders module next
-              <ArrowUpRight size={16} />
-            </button>
+          
           </div>
           <div className="mt-6 grid gap-4">
             {overview?.recentOrders?.map((order) => {
@@ -272,7 +262,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <p className="mt-4 text-sm leading-6 text-zinc-400">
-              Success: {formatCurrency(overview?.payments?.successfulAmount)} · Pending: {formatCurrency(overview?.payments?.pendingAmount)} · Failed: {formatNumber(overview?.payments?.failed)}
+              Net: {formatCurrency(overview?.payments?.successfulAmount)} · Pending: {formatCurrency(overview?.payments?.pendingAmount)} · Failed: {formatNumber(overview?.payments?.failed)}
             </p>
             <div className="mt-5 grid gap-3">
               {spotlightCards.map((card) => {

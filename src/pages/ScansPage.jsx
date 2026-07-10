@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Eye, Filter, RefreshCcw, Search, ShieldCheck, Smartphone, Ticket, XCircle } from 'lucide-react'
+import { Eye, Filter, Search, ShieldCheck, Smartphone, Ticket, XCircle } from 'lucide-react'
 import StatCard from '../components/ui/StatCard'
 import { ApiError, apiRequest } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -64,8 +64,8 @@ export default function ScansPage() {
   const [selectedLogId, setSelectedLogId] = useState(null)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState('')
+  const isDrawerOpen = Boolean(selectedLog)
 
   const handleRequestError = (requestError, fallbackMessage) => {
     if (requestError instanceof ApiError && requestError.status === 401) {
@@ -84,8 +84,6 @@ export default function ScansPage() {
 
     if (!silent) {
       setLoading(true)
-    } else {
-      setRefreshing(true)
     }
 
     setError('')
@@ -113,7 +111,6 @@ export default function ScansPage() {
       handleRequestError(requestError, 'Failed to load scan reports.')
     } finally {
       setLoading(false)
-      setRefreshing(false)
     }
   }
 
@@ -121,6 +118,18 @@ export default function ScansPage() {
     loadScans({ nextPage: 1 })
     setPage(1)
   }, [token])
+
+  useEffect(() => {
+    if (isDrawerOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isDrawerOpen])
 
   const scannerOptions = useMemo(() => {
     const recentScans = overview?.recentScans ?? []
@@ -203,26 +212,21 @@ export default function ScansPage() {
 
   const recentScans = overview?.recentScans ?? []
   const pagination = logsPayload?.pagination
+  const closeDrawer = () => {
+    setSelectedLog(null)
+    setSelectedLogId(null)
+  }
 
   return (
     <div className="space-y-6">
-      <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+      <section className="panel-surface  panel-shadow rounded-[2rem] p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55">Scan Reports</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">Scanner activity, admissions, and audit visibility.</h1>
-            <p className="mt-3 text-sm leading-7 text-zinc-400">
-              Review recent admissions, scanner performance, and scan-level metadata from the backend activity log.
-            </p>
+            <p className="text-xs uppercase tracking-[0.35em] "></p>
+            <h1 className="mt-3 text-3xl font-semibold text-amber-100/70">Scan Reports</h1>
+          
           </div>
-          <button
-            type="button"
-            onClick={() => loadScans({ silent: true, nextPage: page })}
-            className="inline-flex items-center gap-2 self-start rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200 transition hover:bg-white/8"
-          >
-            <RefreshCcw size={16} />
-            {refreshing ? 'Refreshing...' : 'Refresh reports'}
-          </button>
+       
         </div>
       </section>
 
@@ -238,7 +242,7 @@ export default function ScansPage() {
         ))}
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <section className="space-y-6">
         <div className="space-y-6">
           <form onSubmit={handleApplyFilters} className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
             <div className="flex items-center gap-2 text-sm font-medium text-white">
@@ -302,7 +306,7 @@ export default function ScansPage() {
             </div>
           </form>
 
-          <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
+          {/* <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Recent Overview</p>
@@ -340,7 +344,7 @@ export default function ScansPage() {
                 </div>
               )}
             </div>
-          </section>
+          </section> */}
 
           <div className="panel-surface panel-border panel-shadow overflow-hidden rounded-[2rem]">
             <div className="flex items-center justify-between px-5 py-4">
@@ -461,17 +465,31 @@ export default function ScansPage() {
           </div>
         </div>
 
-        <aside className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
+      <div
+        className={`fixed inset-0 z-40 transition-all duration-300 ${
+          isDrawerOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      >
+        <button
+          type="button"
+          aria-label="Close scan drawer"
+          onClick={closeDrawer}
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        />
+
+        <aside
+          className={`panel-surface panel-border panel-shadow absolute right-0 top-0 h-full w-full max-w-2xl overflow-y-auto border-l border-white/10 p-5 transition-transform duration-300 ease-out ${
+            isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Scan Drawer</p>
               <h2 className="mt-2 text-xl font-semibold text-white">Activity details</h2>
             </div>
-            {selectedLog && (
-              <button type="button" onClick={() => setSelectedLog(null)} className="rounded-2xl border border-white/8 bg-white/4 p-2 text-zinc-300">
-                <XCircle size={16} />
-              </button>
-            )}
+            <button type="button" onClick={closeDrawer} className="rounded-2xl border border-white/8 bg-white/4 p-2 text-zinc-300">
+              <XCircle size={16} />
+            </button>
           </div>
 
           {!selectedLog && (
@@ -551,6 +569,7 @@ export default function ScansPage() {
             </div>
           )}
         </aside>
+      </div>
       </section>
     </div>
   )

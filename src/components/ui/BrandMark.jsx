@@ -6,11 +6,9 @@ export default function BrandMark({ compact = false }) {
       </div>
       {!compact && (
         <div>
-          <p className="text-[10px] uppercase tracking-[0.4em] text-amber-100/55">
-            Luxury Control Center
-          </p>
+          
           <h1 className="text-lg font-semibold tracking-[0.16em] text-white">
-            NukhbaGlobal Admin
+            NukhbaGlobal
           </h1>
         </div>
       )}

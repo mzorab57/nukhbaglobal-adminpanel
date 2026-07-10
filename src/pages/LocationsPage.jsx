@@ -1,15 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import {
-  Building2,
-  CalendarDays,
-  Filter,
-  Globe2,
-  Plus,
-  RefreshCcw,
-  Save,
-  Search,
-  Trash2,
-} from 'lucide-react'
+import { Building2, CalendarDays, Filter, Globe2, Plus, Search } from 'lucide-react'
+import CountryFormDrawer from '../components/locations/CountryFormDrawer'
+import CityFormDrawer from '../components/locations/CityFormDrawer'
+import SubEventFormDrawer from '../components/locations/SubEventFormDrawer'
 import StatCard from '../components/ui/StatCard'
 import { ApiError, apiRequest } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -159,6 +152,41 @@ function buildSubEventPayload(form) {
   }
 }
 
+function mergeUniqueById(...collections) {
+  const merged = new Map()
+
+  collections.flat().forEach((item) => {
+    if (item?.id && !merged.has(item.id)) {
+      merged.set(item.id, item)
+    }
+  })
+
+  return Array.from(merged.values())
+}
+
+function ColumnSelection({ label, value, onClear }) {
+  if (!value) {
+    return (
+      <p className="text-xs text-zinc-500">
+        {label}
+      </p>
+    )
+  }
+
+  return (
+    <div className="flex flex-col items-start gap-2 rounded-2xl border border-amber-300/15 bg-amber-400/5 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-xs text-amber-100/85">{value}</p>
+      <button
+        type="button"
+        onClick={onClear}
+        className="text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-400 transition hover:text-white"
+      >
+        Clear
+      </button>
+    </div>
+  )
+}
+
 export default function LocationsPage() {
   const { token, logout } = useAuth()
   const [countryFilters, setCountryFilters] = useState(INITIAL_COUNTRY_FILTERS)
@@ -179,6 +207,7 @@ export default function LocationsPage() {
   const [countryMode, setCountryMode] = useState('create')
   const [cityMode, setCityMode] = useState('create')
   const [subEventMode, setSubEventMode] = useState('create')
+  const [activeDrawer, setActiveDrawer] = useState(null)
   const [loading, setLoading] = useState({
     countries: true,
     cities: true,
@@ -195,6 +224,8 @@ export default function LocationsPage() {
     subEvent: null,
   })
   const [error, setError] = useState('')
+
+  const isDrawerOpen = activeDrawer !== null
 
   const handleRequestError = (requestError, fallbackMessage) => {
     if (requestError instanceof ApiError && requestError.status === 401) {
@@ -327,26 +358,48 @@ export default function LocationsPage() {
     loadSubEvents()
   }, [token])
 
+  useEffect(() => {
+    if (isDrawerOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isDrawerOpen])
+
+  const countries = countriesPayload?.items ?? []
+  const cities = citiesPayload?.items ?? []
+  const subEvents = subEventsPayload?.items ?? []
+
+  const countryOptions = useMemo(
+    () => mergeUniqueById(activeCountries, countries),
+    [activeCountries, countries],
+  )
+
+  const cityOptions = useMemo(
+    () => mergeUniqueById(activeCities, cities),
+    [activeCities, cities],
+  )
+
   const selectedCountry = useMemo(
-    () => (countriesPayload?.items ?? []).find((item) => item.id === selectedCountryId) || null,
-    [countriesPayload, selectedCountryId],
+    () => countryOptions.find((item) => item.id === selectedCountryId) || null,
+    [countryOptions, selectedCountryId],
   )
 
   const selectedCity = useMemo(
-    () => (citiesPayload?.items ?? []).find((item) => item.id === selectedCityId) || null,
-    [citiesPayload, selectedCityId],
+    () => cityOptions.find((item) => item.id === selectedCityId) || null,
+    [cityOptions, selectedCityId],
   )
 
   const selectedSubEvent = useMemo(
-    () => (subEventsPayload?.items ?? []).find((item) => item.id === selectedSubEventId) || null,
-    [subEventsPayload, selectedSubEventId],
+    () => subEvents.find((item) => item.id === selectedSubEventId) || null,
+    [subEvents, selectedSubEventId],
   )
 
   const summaryCards = useMemo(() => {
-    const countries = countriesPayload?.items ?? []
-    const cities = citiesPayload?.items ?? []
-    const subEvents = subEventsPayload?.items ?? []
-
     return [
       {
         eyebrow: 'Coverage',
@@ -367,7 +420,7 @@ export default function LocationsPage() {
         delta: `${formatNumber(subEvents.reduce((sum, item) => sum + Number(item.ticketsCount || 0), 0))} linked ticket rows`,
       },
     ]
-  }, [countriesPayload, citiesPayload, subEventsPayload])
+  }, [countries, cities, subEvents])
 
   const handleCountryFilterChange = (field) => (event) => {
     setCountryFilters((current) => ({
@@ -411,59 +464,140 @@ export default function LocationsPage() {
     }))
   }
 
-  const resetCountryEditor = () => {
-    setSelectedCountryId(null)
+  const closeDrawer = () => {
+    setActiveDrawer(null)
+  }
+
+  const openCountryCreate = () => {
     setCountryMode('create')
     setCountryForm(EMPTY_COUNTRY_FORM)
+    setActiveDrawer('country')
   }
 
-  const resetCityEditor = () => {
-    setSelectedCityId(null)
-    setCityMode('create')
-    setCityForm((current) => ({
-      ...EMPTY_CITY_FORM,
-      country_id: current.country_id || (selectedCountryId ? String(selectedCountryId) : ''),
-    }))
-  }
-
-  const resetSubEventEditor = () => {
-    setSelectedSubEventId(null)
-    setSubEventMode('create')
-    setSubEventForm((current) => ({
-      ...EMPTY_SUB_EVENT_FORM,
-      event_id: current.event_id,
-      city_id: current.city_id || (selectedCityId ? String(selectedCityId) : ''),
-    }))
-  }
-
-  const handleSelectCountry = (country) => {
+  const openCountryEdit = (country) => {
     setSelectedCountryId(country.id)
     setCountryMode('edit')
     setCountryForm(mapCountryToForm(country))
-    if (cityMode === 'create') {
-      setCityForm((current) => ({
-        ...current,
-        country_id: String(country.id),
-      }))
-    }
+    setActiveDrawer('country')
   }
 
-  const handleSelectCity = (city) => {
+  const openCityCreate = () => {
+    setCityMode('create')
+    setCityForm({
+      ...EMPTY_CITY_FORM,
+      country_id: selectedCountryId ? String(selectedCountryId) : '',
+    })
+    setActiveDrawer('city')
+  }
+
+  const openCityEdit = (city) => {
     setSelectedCityId(city.id)
     setCityMode('edit')
     setCityForm(mapCityToForm(city))
-    if (subEventMode === 'create') {
-      setSubEventForm((current) => ({
-        ...current,
-        city_id: String(city.id),
-      }))
-    }
+    setActiveDrawer('city')
   }
 
-  const handleSelectSubEvent = (subEvent) => {
+  const openSubEventCreate = () => {
+    setSubEventMode('create')
+    setSubEventForm({
+      ...EMPTY_SUB_EVENT_FORM,
+      event_id: subEventFilters.event_id || '',
+      city_id: selectedCityId ? String(selectedCityId) : '',
+    })
+    setActiveDrawer('subEvent')
+  }
+
+  const openSubEventEdit = (subEvent) => {
     setSelectedSubEventId(subEvent.id)
     setSubEventMode('edit')
     setSubEventForm(mapSubEventToForm(subEvent))
+    setActiveDrawer('subEvent')
+  }
+
+  const clearCountrySelection = async () => {
+    setSelectedCountryId(null)
+    setSelectedCityId(null)
+    setSelectedSubEventId(null)
+
+    const nextCityFilters = {
+      ...cityFilters,
+      country_id: '',
+    }
+    const nextSubEventFilters = {
+      ...subEventFilters,
+      city_id: '',
+    }
+
+    setCityFilters(nextCityFilters)
+    setSubEventFilters(nextSubEventFilters)
+
+    await Promise.all([
+      loadCities({ silent: true, nextFilters: nextCityFilters }),
+      loadSubEvents({ silent: true, nextFilters: nextSubEventFilters }),
+    ])
+  }
+
+  const clearCitySelection = async () => {
+    setSelectedCityId(null)
+    setSelectedSubEventId(null)
+
+    const nextSubEventFilters = {
+      ...subEventFilters,
+      city_id: '',
+    }
+
+    setSubEventFilters(nextSubEventFilters)
+    await loadSubEvents({ silent: true, nextFilters: nextSubEventFilters })
+  }
+
+  const handleSelectCountry = async (country) => {
+    if (selectedCountryId === country.id) {
+      await clearCountrySelection()
+      return
+    }
+
+    setSelectedCountryId(country.id)
+    setSelectedCityId(null)
+    setSelectedSubEventId(null)
+
+    const nextCityFilters = {
+      ...cityFilters,
+      country_id: String(country.id),
+    }
+    const nextSubEventFilters = {
+      ...subEventFilters,
+      city_id: '',
+    }
+
+    setCityFilters(nextCityFilters)
+    setSubEventFilters(nextSubEventFilters)
+
+    await Promise.all([
+      loadCities({ silent: true, nextFilters: nextCityFilters }),
+      loadSubEvents({ silent: true, nextFilters: nextSubEventFilters }),
+    ])
+  }
+
+  const handleSelectCity = async (city) => {
+    if (selectedCityId === city.id) {
+      await clearCitySelection()
+      return
+    }
+
+    setSelectedCityId(city.id)
+    setSelectedSubEventId(null)
+
+    const nextSubEventFilters = {
+      ...subEventFilters,
+      city_id: String(city.id),
+    }
+
+    setSubEventFilters(nextSubEventFilters)
+    await loadSubEvents({ silent: true, nextFilters: nextSubEventFilters })
+  }
+
+  const handleSelectSubEvent = (subEvent) => {
+    setSelectedSubEventId((current) => (current === subEvent.id ? null : subEvent.id))
   }
 
   const handleCountryFilterSubmit = async (event) => {
@@ -503,17 +637,35 @@ export default function LocationsPage() {
       )
 
       const country = response.data?.country
+      const nextCountryId = country?.id ?? selectedCountryId
+      const nextCityFilters = {
+        ...cityFilters,
+        country_id: nextCountryId ? String(nextCountryId) : '',
+      }
+      const nextSubEventFilters = {
+        ...subEventFilters,
+        city_id: '',
+      }
+
       if (country) {
         setSelectedCountryId(country.id)
         setCountryMode('edit')
         setCountryForm(mapCountryToForm(country))
-        setCityForm((current) => ({
-          ...current,
-          country_id: current.country_id || String(country.id),
-        }))
       }
 
-      await Promise.all([loadCountries({ silent: true }), loadLookups()])
+      setSelectedCityId(null)
+      setSelectedSubEventId(null)
+      setCityFilters(nextCityFilters)
+      setSubEventFilters(nextSubEventFilters)
+
+      await Promise.all([
+        loadCountries({ silent: true }),
+        loadCities({ silent: true, nextFilters: nextCityFilters }),
+        loadSubEvents({ silent: true, nextFilters: nextSubEventFilters }),
+        loadLookups(),
+      ])
+
+      closeDrawer()
     } catch (requestError) {
       handleRequestError(requestError, 'Failed to save country.')
     } finally {
@@ -543,17 +695,35 @@ export default function LocationsPage() {
       )
 
       const city = response.data?.city
+      const nextSelectedCountryId = city?.countryId ?? (cityForm.country_id ? Number(cityForm.country_id) : selectedCountryId)
+      const nextSelectedCityId = city?.id ?? selectedCityId
+      const nextCityFilters = {
+        ...cityFilters,
+        country_id: nextSelectedCountryId ? String(nextSelectedCountryId) : '',
+      }
+      const nextSubEventFilters = {
+        ...subEventFilters,
+        city_id: nextSelectedCityId ? String(nextSelectedCityId) : '',
+      }
+
       if (city) {
+        setSelectedCountryId(city.countryId ?? nextSelectedCountryId)
         setSelectedCityId(city.id)
         setCityMode('edit')
         setCityForm(mapCityToForm(city))
-        setSubEventForm((current) => ({
-          ...current,
-          city_id: current.city_id || String(city.id),
-        }))
       }
 
-      await Promise.all([loadCities({ silent: true }), loadLookups()])
+      setSelectedSubEventId(null)
+      setCityFilters(nextCityFilters)
+      setSubEventFilters(nextSubEventFilters)
+
+      await Promise.all([
+        loadCities({ silent: true, nextFilters: nextCityFilters }),
+        loadSubEvents({ silent: true, nextFilters: nextSubEventFilters }),
+        loadLookups(),
+      ])
+
+      closeDrawer()
     } catch (requestError) {
       handleRequestError(requestError, 'Failed to save city.')
     } finally {
@@ -572,7 +742,7 @@ export default function LocationsPage() {
 
     try {
       const eventId = Number(subEventForm.event_id)
-      await apiRequest(
+      const response = await apiRequest(
         subEventMode === 'edit' && selectedSubEventId
           ? `/api/admin/sub-events/${selectedSubEventId}/update`
           : `/api/admin/events/${eventId}/sub-events/create`,
@@ -583,10 +753,26 @@ export default function LocationsPage() {
         },
       )
 
-      await loadSubEvents({ silent: true })
-      if (subEventMode === 'create') {
-        resetSubEventEditor()
+      const subEvent = response.data?.subEvent
+      const nextSelectedSubEventId = subEvent?.id ?? selectedSubEventId
+      const nextSubEventFilters = {
+        ...subEventFilters,
+        city_id: subEvent?.cityId
+          ? String(subEvent.cityId)
+          : subEventForm.city_id || subEventFilters.city_id,
       }
+
+      if (subEvent?.cityId) {
+        setSelectedCityId(subEvent.cityId)
+      }
+
+      if (nextSelectedSubEventId) {
+        setSelectedSubEventId(nextSelectedSubEventId)
+      }
+
+      setSubEventFilters(nextSubEventFilters)
+      await loadSubEvents({ silent: true, nextFilters: nextSubEventFilters })
+      closeDrawer()
     } catch (requestError) {
       handleRequestError(requestError, 'Failed to save sub-event.')
     } finally {
@@ -612,11 +798,32 @@ export default function LocationsPage() {
         token,
       })
 
-      if (selectedCountryId === countryId) {
-        resetCountryEditor()
+      const nextCityFilters = {
+        ...cityFilters,
+        country_id: selectedCountryId === countryId ? '' : cityFilters.country_id,
+      }
+      const nextSubEventFilters = {
+        ...subEventFilters,
+        city_id: '',
       }
 
-      await Promise.all([loadCountries({ silent: true }), loadLookups()])
+      if (selectedCountryId === countryId) {
+        setSelectedCountryId(null)
+        setSelectedCityId(null)
+        setSelectedSubEventId(null)
+      }
+
+      setCityFilters(nextCityFilters)
+      setSubEventFilters(nextSubEventFilters)
+
+      await Promise.all([
+        loadCountries({ silent: true }),
+        loadCities({ silent: true, nextFilters: nextCityFilters }),
+        loadSubEvents({ silent: true, nextFilters: nextSubEventFilters }),
+        loadLookups(),
+      ])
+
+      closeDrawer()
     } catch (requestError) {
       handleRequestError(requestError, 'Failed to delete country.')
     } finally {
@@ -642,11 +849,25 @@ export default function LocationsPage() {
         token,
       })
 
-      if (selectedCityId === cityId) {
-        resetCityEditor()
+      const nextSubEventFilters = {
+        ...subEventFilters,
+        city_id: selectedCityId === cityId ? '' : subEventFilters.city_id,
       }
 
-      await Promise.all([loadCities({ silent: true }), loadLookups()])
+      if (selectedCityId === cityId) {
+        setSelectedCityId(null)
+        setSelectedSubEventId(null)
+      }
+
+      setSubEventFilters(nextSubEventFilters)
+
+      await Promise.all([
+        loadCities({ silent: true }),
+        loadSubEvents({ silent: true, nextFilters: nextSubEventFilters }),
+        loadLookups(),
+      ])
+
+      closeDrawer()
     } catch (requestError) {
       handleRequestError(requestError, 'Failed to delete city.')
     } finally {
@@ -673,10 +894,11 @@ export default function LocationsPage() {
       })
 
       if (selectedSubEventId === subEventId) {
-        resetSubEventEditor()
+        setSelectedSubEventId(null)
       }
 
       await loadSubEvents({ silent: true })
+      closeDrawer()
     } catch (requestError) {
       handleRequestError(requestError, 'Failed to delete sub-event.')
     } finally {
@@ -686,28 +908,14 @@ export default function LocationsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+      <section className="panel-surface panel-shadow rounded-[2rem] p-4 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55">Locations Module</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">Countries, cities, and sub-event scheduling.</h1>
-            <p className="mt-3 text-sm leading-7 text-zinc-400">
-              Keep catalog geography and event scheduling aligned with backend constraints from a single premium workspace.
+          <div className="max-w-3xl">
+            <h1 className="mt-2 text-2xl font-semibold text-amber-100/70 sm:mt-3 sm:text-3xl">Locations Module</h1>
+            <p className="mt-3 text-sm leading-6 text-zinc-500 sm:max-w-2xl">
+              A streamlined 3-column flow for countries, cities, and sub-events. Select left to right, and open drawers only when you need to create or edit.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              loadLookups()
-              loadCountries({ silent: true })
-              loadCities({ silent: true })
-              loadSubEvents({ silent: true })
-            }}
-            className="inline-flex items-center gap-2 self-start rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200 transition hover:bg-white/8"
-          >
-            <RefreshCcw size={16} />
-            Refresh module
-          </button>
         </div>
       </section>
 
@@ -724,675 +932,410 @@ export default function LocationsPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-3">
-        <div className="space-y-6">
-          <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Countries</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Coverage map</h2>
+        <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-4 sm:p-5">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Countries</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Coverage map</h2>
+            </div>
+            <button
+              type="button"
+              onClick={openCountryCreate}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-2 text-xs font-semibold text-zinc-900 sm:w-auto"
+            >
+              <Plus size={14} />
+              New
+            </button>
+          </div>
+
+          <form onSubmit={handleCountryFilterSubmit} className="mt-5 space-y-4">
+            <label className="space-y-2 text-sm text-zinc-300">
+              <span>Search</span>
+              <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
+                <Search size={16} className="text-zinc-500" />
+                <input
+                  value={countryFilters.q}
+                  onChange={handleCountryFilterChange('q')}
+                  placeholder="Country name"
+                  className="w-full bg-transparent text-white outline-none placeholder:text-zinc-500"
+                />
               </div>
+            </label>
+
+            <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
+              <select
+                value={countryFilters.status}
+                onChange={handleCountryFilterChange('status')}
+                className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
+              >
+                <option value="">All statuses</option>
+                <option value="1">Active</option>
+                <option value="0">Hidden</option>
+              </select>
+              <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900 md:w-auto">
+                <Filter size={15} />
+                Apply
+              </button>
               <button
                 type="button"
-                onClick={resetCountryEditor}
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/8 bg-white/4 px-4 py-2 text-xs font-medium text-zinc-200"
+                onClick={() => {
+                  const next = { ...INITIAL_COUNTRY_FILTERS }
+                  setCountryFilters(next)
+                  loadCountries({ nextFilters: next })
+                }}
+                className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200 md:w-auto"
               >
-                <Plus size={14} />
-                New
+                Reset
               </button>
             </div>
+          </form>
 
-            <form onSubmit={handleCountryFilterSubmit} className="mt-5 space-y-4">
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Search</span>
-                <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
-                  <Search size={16} className="text-zinc-500" />
-                  <input
-                    value={countryFilters.q}
-                    onChange={handleCountryFilterChange('q')}
-                    placeholder="Country name"
-                    className="w-full bg-transparent text-white outline-none placeholder:text-zinc-500"
-                  />
-                </div>
-              </label>
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Status</span>
-                <select
-                  value={countryFilters.status}
-                  onChange={handleCountryFilterChange('status')}
-                  className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                >
-                  <option value="">All</option>
-                  <option value="1">Active</option>
-                  <option value="0">Hidden</option>
-                </select>
-              </label>
-              <div className="flex gap-3">
-                <button type="submit" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900">
-                  <Filter size={15} />
-                  Apply
-                </button>
+          <div className="mt-5 space-y-3">
+            {loading.countries ? (
+              <div className="rounded-3xl border border-white/8 bg-white/4 p-4 text-sm text-zinc-400">Loading countries...</div>
+            ) : countries.length ? (
+              countries.map((country) => (
                 <button
+                  key={country.id}
                   type="button"
-                  onClick={() => {
-                    const next = { ...INITIAL_COUNTRY_FILTERS }
-                    setCountryFilters(next)
-                    loadCountries({ nextFilters: next })
-                  }}
-                  className="rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200"
+                  onClick={() => handleSelectCountry(country)}
+                  className={`w-full rounded-3xl border px-4 py-4 text-left transition ${
+                    selectedCountryId === country.id
+                      ? 'border-amber-300/30 bg-amber-400/10'
+                      : 'border-white/8 bg-white/4 hover:bg-white/7'
+                  }`}
                 >
-                  Reset
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-5 space-y-3">
-              {loading.countries ? (
-                <div className="rounded-3xl border border-white/8 bg-white/4 p-5 text-sm text-zinc-400">Loading countries...</div>
-              ) : countriesPayload?.items?.length ? (
-                countriesPayload.items.map((country) => (
-                  <button
-                    key={country.id}
-                    type="button"
-                    onClick={() => handleSelectCountry(country)}
-                    className={`w-full rounded-3xl border p-4 text-left transition ${
-                      selectedCountryId === country.id
-                        ? 'border-amber-300/30 bg-amber-400/10'
-                        : 'border-white/8 bg-white/4 hover:bg-white/7'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Globe2 size={16} className="text-amber-200" />
-                          <p className="text-sm font-semibold text-white">{country.nameText}</p>
-                        </div>
-                        <p className="mt-2 text-xs text-zinc-500">Updated {formatDateTime(country.updatedAt)}</p>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Globe2 size={15} className="shrink-0 text-amber-200" />
+                        <p className="truncate text-sm font-semibold text-white">{country.nameText}</p>
                       </div>
-                      <span className={`rounded-full border px-3 py-1 text-xs font-medium ${toneForStatus(country.status)}`}>
-                        {country.status ? 'active' : 'hidden'}
+                      <p className="mt-2 text-[11px] text-zinc-500">Updated {formatDateTime(country.updatedAt)}</p>
+                    </div>
+                    <span className={`rounded-full border px-3 py-1 text-[11px] font-medium ${toneForStatus(country.status)}`}>
+                      {country.status ? 'active' : 'hidden'}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-wrap gap-2 text-[11px] text-zinc-400">
+                      <span className="rounded-full border border-white/6 bg-black/10 px-3 py-1">
+                        {formatNumber(country.citiesCount)} cities
+                      </span>
+                      <span className="rounded-full border border-white/6 bg-black/10 px-3 py-1">
+                        {formatNumber(country.eventsCount)} events
                       </span>
                     </div>
-                    <div className="mt-4 grid grid-cols-2 gap-3 text-xs text-zinc-400">
-                      <div className="rounded-2xl border border-white/6 bg-black/10 px-3 py-3">
-                        <p>Cities</p>
-                        <p className="mt-1 text-sm text-white">{formatNumber(country.citiesCount)}</p>
-                      </div>
-                      <div className="rounded-2xl border border-white/6 bg-black/10 px-3 py-3">
-                        <p>Events</p>
-                        <p className="mt-1 text-sm text-white">{formatNumber(country.eventsCount)}</p>
-                      </div>
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <div className="rounded-3xl border border-dashed border-white/10 bg-white/3 p-5 text-sm text-zinc-500">
-                  No countries matched the current filters.
-                </div>
-              )}
-            </div>
-          </section>
-
-          <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">
-                  {countryMode === 'edit' ? 'Edit Country' : 'Create Country'}
-                </p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Country editor</h2>
-              </div>
-              {selectedCountry && (
-                <button
-                  type="button"
-                  onClick={() => handleDeleteCountry(selectedCountry.id)}
-                  disabled={deletingId.country === selectedCountry.id}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-2 text-xs font-medium text-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <Trash2 size={14} />
-                  {deletingId.country === selectedCountry.id ? 'Deleting...' : 'Delete'}
+                    <span
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        openCountryEdit(country)
+                      }}
+                      className="cursor-pointer text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-400 transition hover:text-white"
+                    >
+                      Edit
+                    </span>
+                  </div>
                 </button>
-              )}
-            </div>
-
-            <form onSubmit={handleCountrySubmit} className="mt-5 space-y-4">
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Name EN</span>
-                <input
-                  value={countryForm.name_en}
-                  onChange={handleCountryFormChange('name_en')}
-                  className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                />
-              </label>
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Name AR/KU</span>
-                <input
-                  value={countryForm.name_ar}
-                  onChange={handleCountryFormChange('name_ar')}
-                  className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                />
-              </label>
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Status</span>
-                <select
-                  value={countryForm.status}
-                  onChange={handleCountryFormChange('status')}
-                  className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                >
-                  <option value="1">Active</option>
-                  <option value="0">Hidden</option>
-                </select>
-              </label>
-              <button
-                type="submit"
-                disabled={saving.country}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Save size={16} />
-                {saving.country ? 'Saving...' : countryMode === 'edit' ? 'Save country' : 'Create country'}
-              </button>
-            </form>
-          </section>
-        </div>
-
-        <div className="space-y-6">
-          <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Cities</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Operational areas</h2>
+              ))
+            ) : (
+              <div className="rounded-3xl border border-dashed border-white/10 bg-white/3 p-5 text-sm text-zinc-500">
+                No countries matched the current filters.
               </div>
+            )}
+          </div>
+        </section>
+
+        <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-4 sm:p-5">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Cities</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Operational areas</h2>
+            </div>
+            <button
+              type="button"
+              onClick={openCityCreate}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-2 text-xs font-semibold text-zinc-900 sm:w-auto"
+            >
+              <Plus size={14} />
+              New
+            </button>
+          </div>
+
+          <div className="mt-5">
+            <ColumnSelection
+              label="Select a country to focus this column, or browse all cities."
+              value={selectedCountry ? `Showing cities in ${selectedCountry.nameText}` : ''}
+              onClear={clearCountrySelection}
+            />
+          </div>
+
+          <form onSubmit={handleCityFilterSubmit} className="mt-5 space-y-4">
+            <label className="space-y-2 text-sm text-zinc-300">
+              <span>Search</span>
+              <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
+                <Search size={16} className="text-zinc-500" />
+                <input
+                  value={cityFilters.q}
+                  onChange={handleCityFilterChange('q')}
+                  placeholder="City name"
+                  className="w-full bg-transparent text-white outline-none placeholder:text-zinc-500"
+                />
+              </div>
+            </label>
+
+            <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
+              <select
+                value={cityFilters.status}
+                onChange={handleCityFilterChange('status')}
+                className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
+              >
+                <option value="">All statuses</option>
+                <option value="1">Active</option>
+                <option value="0">Hidden</option>
+              </select>
+              <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900 md:w-auto">
+                <Filter size={15} />
+                Apply
+              </button>
               <button
                 type="button"
-                onClick={resetCityEditor}
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/8 bg-white/4 px-4 py-2 text-xs font-medium text-zinc-200"
+                onClick={() => {
+                  const next = {
+                    ...INITIAL_CITY_FILTERS,
+                    country_id: selectedCountryId ? String(selectedCountryId) : '',
+                  }
+                  setCityFilters(next)
+                  loadCities({ nextFilters: next })
+                }}
+                className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200 md:w-auto"
               >
-                <Plus size={14} />
-                New
+                Reset
               </button>
             </div>
+          </form>
 
-            <form onSubmit={handleCityFilterSubmit} className="mt-5 space-y-4">
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Search</span>
-                <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
-                  <Search size={16} className="text-zinc-500" />
-                  <input
-                    value={cityFilters.q}
-                    onChange={handleCityFilterChange('q')}
-                    placeholder="City or country"
-                    className="w-full bg-transparent text-white outline-none placeholder:text-zinc-500"
-                  />
-                </div>
-              </label>
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Status</span>
-                  <select
-                    value={cityFilters.status}
-                    onChange={handleCityFilterChange('status')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  >
-                    <option value="">All</option>
-                    <option value="1">Active</option>
-                    <option value="0">Hidden</option>
-                  </select>
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Country</span>
-                  <select
-                    value={cityFilters.country_id}
-                    onChange={handleCityFilterChange('country_id')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  >
-                    <option value="">All countries</option>
-                    {activeCountries.map((country) => (
-                      <option key={country.id} value={country.id}>
-                        {country.nameText}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <div className="flex gap-3">
-                <button type="submit" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900">
-                  <Filter size={15} />
-                  Apply
-                </button>
+          <div className="mt-5 space-y-3">
+            {loading.cities ? (
+              <div className="rounded-3xl border border-white/8 bg-white/4 p-4 text-sm text-zinc-400">Loading cities...</div>
+            ) : cities.length ? (
+              cities.map((city) => (
                 <button
+                  key={city.id}
                   type="button"
-                  onClick={() => {
-                    const next = { ...INITIAL_CITY_FILTERS }
-                    setCityFilters(next)
-                    loadCities({ nextFilters: next })
-                  }}
-                  className="rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200"
+                  onClick={() => handleSelectCity(city)}
+                  className={`w-full rounded-3xl border px-4 py-4 text-left transition ${
+                    selectedCityId === city.id
+                      ? 'border-amber-300/30 bg-amber-400/10'
+                      : 'border-white/8 bg-white/4 hover:bg-white/7'
+                  }`}
                 >
-                  Reset
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-5 space-y-3">
-              {loading.cities ? (
-                <div className="rounded-3xl border border-white/8 bg-white/4 p-5 text-sm text-zinc-400">Loading cities...</div>
-              ) : citiesPayload?.items?.length ? (
-                citiesPayload.items.map((city) => (
-                  <button
-                    key={city.id}
-                    type="button"
-                    onClick={() => handleSelectCity(city)}
-                    className={`w-full rounded-3xl border p-4 text-left transition ${
-                      selectedCityId === city.id
-                        ? 'border-amber-300/30 bg-amber-400/10'
-                        : 'border-white/8 bg-white/4 hover:bg-white/7'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Building2 size={16} className="text-amber-200" />
-                          <p className="text-sm font-semibold text-white">{city.nameText}</p>
-                        </div>
-                        <p className="mt-2 text-xs text-zinc-500">{city.countryNameText}</p>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <Building2 size={15} className="shrink-0 text-amber-200" />
+                        <p className="truncate text-sm font-semibold text-white">{city.nameText}</p>
                       </div>
-                      <span className={`rounded-full border px-3 py-1 text-xs font-medium ${toneForStatus(city.status)}`}>
-                        {city.status ? 'active' : 'hidden'}
-                      </span>
+                      <p className="mt-2 text-[11px] text-zinc-500">{city.countryNameText || 'No country'}</p>
                     </div>
-                    <div className="mt-4 rounded-2xl border border-white/6 bg-black/10 px-3 py-3 text-xs text-zinc-400">
-                      <p>Sub-events</p>
-                      <p className="mt-1 text-sm text-white">{formatNumber(city.subEventsCount)}</p>
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <div className="rounded-3xl border border-dashed border-white/10 bg-white/3 p-5 text-sm text-zinc-500">
-                  No cities matched the current filters.
-                </div>
-              )}
-            </div>
-          </section>
+                    <span className={`rounded-full border px-3 py-1 text-[11px] font-medium ${toneForStatus(city.status)}`}>
+                      {city.status ? 'active' : 'hidden'}
+                    </span>
+                  </div>
 
-          <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">
-                  {cityMode === 'edit' ? 'Edit City' : 'Create City'}
-                </p>
-                <h2 className="mt-2 text-xl font-semibold text-white">City editor</h2>
-              </div>
-              {selectedCity && (
-                <button
-                  type="button"
-                  onClick={() => handleDeleteCity(selectedCity.id)}
-                  disabled={deletingId.city === selectedCity.id}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-2 text-xs font-medium text-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <Trash2 size={14} />
-                  {deletingId.city === selectedCity.id ? 'Deleting...' : 'Delete'}
+                  <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span className="rounded-full border border-white/6 bg-black/10 px-3 py-1 text-[11px] text-zinc-400">
+                      {formatNumber(city.subEventsCount)} sub-events
+                    </span>
+                    <span
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        openCityEdit(city)
+                      }}
+                      className="cursor-pointer text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-400 transition hover:text-white"
+                    >
+                      Edit
+                    </span>
+                  </div>
                 </button>
-              )}
-            </div>
-
-            <form onSubmit={handleCitySubmit} className="mt-5 space-y-4">
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Country</span>
-                <select
-                  value={cityForm.country_id}
-                  onChange={handleCityFormChange('country_id')}
-                  className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                >
-                  <option value="">Select country</option>
-                  {activeCountries.map((country) => (
-                    <option key={country.id} value={country.id}>
-                      {country.nameText}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Name EN</span>
-                <input
-                  value={cityForm.name_en}
-                  onChange={handleCityFormChange('name_en')}
-                  className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                />
-              </label>
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Name AR/KU</span>
-                <input
-                  value={cityForm.name_ar}
-                  onChange={handleCityFormChange('name_ar')}
-                  className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                />
-              </label>
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Status</span>
-                <select
-                  value={cityForm.status}
-                  onChange={handleCityFormChange('status')}
-                  className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                >
-                  <option value="1">Active</option>
-                  <option value="0">Hidden</option>
-                </select>
-              </label>
-              <button
-                type="submit"
-                disabled={saving.city}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Save size={16} />
-                {saving.city ? 'Saving...' : cityMode === 'edit' ? 'Save city' : 'Create city'}
-              </button>
-            </form>
-          </section>
-        </div>
-
-        <div className="space-y-6">
-          <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Sub-Events</p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Scheduling layer</h2>
+              ))
+            ) : (
+              <div className="rounded-3xl border border-dashed border-white/10 bg-white/3 p-5 text-sm text-zinc-500">
+                No cities matched the current filters.
               </div>
+            )}
+          </div>
+        </section>
+
+        <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-4 sm:p-5">
+          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Sub-Events</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Scheduling layer</h2>
+            </div>
+            <button
+              type="button"
+              onClick={openSubEventCreate}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-2 text-xs font-semibold text-zinc-900 sm:w-auto"
+            >
+              <Plus size={14} />
+              New
+            </button>
+          </div>
+
+          <div className="mt-5">
+            <ColumnSelection
+              label="Select a city to narrow the schedule column, or browse the full list."
+              value={selectedCity ? `Showing sub-events in ${selectedCity.nameText}` : ''}
+              onClear={clearCitySelection}
+            />
+          </div>
+
+          <form onSubmit={handleSubEventFilterSubmit} className="mt-5 space-y-4">
+            <label className="space-y-2 text-sm text-zinc-300">
+              <span>Search</span>
+              <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
+                <Search size={16} className="text-zinc-500" />
+                <input
+                  value={subEventFilters.q}
+                  onChange={handleSubEventFilterChange('q')}
+                  placeholder="Sub-event title"
+                  className="w-full bg-transparent text-white outline-none placeholder:text-zinc-500"
+                />
+              </div>
+            </label>
+
+            <div className="grid gap-3 md:grid-cols-[1fr_auto_auto]">
+              <select
+                value={subEventFilters.event_id}
+                onChange={handleSubEventFilterChange('event_id')}
+                className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
+              >
+                <option value="">All events</option>
+                {activeEvents.map((eventItem) => (
+                  <option key={eventItem.id} value={eventItem.id}>
+                    {eventItem.titleText}
+                  </option>
+                ))}
+              </select>
+              <button type="submit" className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900 md:w-auto">
+                <Filter size={15} />
+                Apply
+              </button>
               <button
                 type="button"
-                onClick={resetSubEventEditor}
-                className="inline-flex items-center gap-2 rounded-2xl border border-white/8 bg-white/4 px-4 py-2 text-xs font-medium text-zinc-200"
+                onClick={() => {
+                  const next = {
+                    ...INITIAL_SUB_EVENT_FILTERS,
+                    city_id: selectedCityId ? String(selectedCityId) : '',
+                  }
+                  setSubEventFilters(next)
+                  loadSubEvents({ nextFilters: next })
+                }}
+                className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200 md:w-auto"
               >
-                <Plus size={14} />
-                New
+                Reset
               </button>
             </div>
+          </form>
 
-            <form onSubmit={handleSubEventFilterSubmit} className="mt-5 space-y-4">
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>Search</span>
-                <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
-                  <Search size={16} className="text-zinc-500" />
-                  <input
-                    value={subEventFilters.q}
-                    onChange={handleSubEventFilterChange('q')}
-                    placeholder="Sub-event or city"
-                    className="w-full bg-transparent text-white outline-none placeholder:text-zinc-500"
-                  />
-                </div>
-              </label>
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Event</span>
-                  <select
-                    value={subEventFilters.event_id}
-                    onChange={handleSubEventFilterChange('event_id')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  >
-                    <option value="">All events</option>
-                    {activeEvents.map((eventItem) => (
-                      <option key={eventItem.id} value={eventItem.id}>
-                        {eventItem.titleText}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>City</span>
-                  <select
-                    value={subEventFilters.city_id}
-                    onChange={handleSubEventFilterChange('city_id')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  >
-                    <option value="">All cities</option>
-                    {activeCities.map((city) => (
-                      <option key={city.id} value={city.id}>
-                        {city.nameText}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <div className="flex gap-3">
-                <button type="submit" className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-4 py-3 text-sm font-semibold text-zinc-900">
-                  <Filter size={15} />
-                  Apply
-                </button>
+          <div className="mt-5 space-y-3">
+            {loading.subEvents ? (
+              <div className="rounded-3xl border border-white/8 bg-white/4 p-4 text-sm text-zinc-400">Loading sub-events...</div>
+            ) : subEvents.length ? (
+              subEvents.map((subEvent) => (
                 <button
+                  key={subEvent.id}
                   type="button"
-                  onClick={() => {
-                    const next = { ...INITIAL_SUB_EVENT_FILTERS }
-                    setSubEventFilters(next)
-                    loadSubEvents({ nextFilters: next })
-                  }}
-                  className="rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200"
+                  onClick={() => handleSelectSubEvent(subEvent)}
+                  className={`w-full rounded-3xl border px-4 py-4 text-left transition ${
+                    selectedSubEventId === subEvent.id
+                      ? 'border-amber-300/30 bg-amber-400/10'
+                      : 'border-white/8 bg-white/4 hover:bg-white/7'
+                  }`}
                 >
-                  Reset
-                </button>
-              </div>
-            </form>
-
-            <div className="mt-5 space-y-3">
-              {loading.subEvents ? (
-                <div className="rounded-3xl border border-white/8 bg-white/4 p-5 text-sm text-zinc-400">Loading sub-events...</div>
-              ) : subEventsPayload?.items?.length ? (
-                subEventsPayload.items.map((subEvent) => (
-                  <button
-                    key={subEvent.id}
-                    type="button"
-                    onClick={() => handleSelectSubEvent(subEvent)}
-                    className={`w-full rounded-3xl border p-4 text-left transition ${
-                      selectedSubEventId === subEvent.id
-                        ? 'border-amber-300/30 bg-amber-400/10'
-                        : 'border-white/8 bg-white/4 hover:bg-white/7'
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <CalendarDays size={16} className="text-amber-200" />
-                          <p className="text-sm font-semibold text-white">{subEvent.titleText}</p>
-                        </div>
-                        <p className="mt-2 text-xs text-zinc-500">{subEvent.eventTitleText} · {subEvent.cityNameText}</p>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <CalendarDays size={15} className="shrink-0 text-amber-200" />
+                        <p className="truncate text-sm font-semibold text-white">{subEvent.titleText}</p>
                       </div>
-                      <span className="rounded-full border border-white/8 bg-black/10 px-3 py-1 text-xs font-medium text-zinc-200">
-                        {formatNumber(subEvent.ticketsCount)} tickets
-                      </span>
+                      <p className="mt-2 text-[11px] text-zinc-500">
+                        {subEvent.eventTitleText} · {subEvent.cityNameText}
+                      </p>
                     </div>
-                    <div className="mt-4 rounded-2xl border border-white/6 bg-black/10 px-3 py-3 text-xs text-zinc-400">
-                      <p>{formatDateTime(`${subEvent.date} ${subEvent.startTime}`)}</p>
-                      <p className="mt-1">{subEvent.startTime} - {subEvent.endTime}</p>
-                    </div>
-                  </button>
-                ))
-              ) : (
-                <div className="rounded-3xl border border-dashed border-white/10 bg-white/3 p-5 text-sm text-zinc-500">
-                  No sub-events matched the current filters.
-                </div>
-              )}
-            </div>
-          </section>
+                    <span className="rounded-full border border-white/8 bg-black/10 px-3 py-1 text-[11px] font-medium text-zinc-200">
+                      {formatNumber(subEvent.ticketsCount)} tickets
+                    </span>
+                  </div>
 
-          <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">
-                  {subEventMode === 'edit' ? 'Edit Sub-Event' : 'Create Sub-Event'}
-                </p>
-                <h2 className="mt-2 text-xl font-semibold text-white">Schedule editor</h2>
-              </div>
-              {selectedSubEvent && (
-                <button
-                  type="button"
-                  onClick={() => handleDeleteSubEvent(selectedSubEvent.id)}
-                  disabled={deletingId.subEvent === selectedSubEvent.id}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-2 text-xs font-medium text-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  <Trash2 size={14} />
-                  {deletingId.subEvent === selectedSubEvent.id ? 'Deleting...' : 'Delete'}
+                  <div className="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-[11px] leading-5 text-zinc-400">
+                      {formatDateTime(`${subEvent.date} ${subEvent.startTime}`)} · {subEvent.startTime} - {subEvent.endTime}
+                    </p>
+                    <span
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        openSubEventEdit(subEvent)
+                      }}
+                      className="cursor-pointer text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-400 transition hover:text-white"
+                    >
+                      Edit
+                    </span>
+                  </div>
                 </button>
-              )}
-            </div>
-
-            <form onSubmit={handleSubEventSubmit} className="mt-5 space-y-4">
-              {subEventMode === 'create' ? (
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Event</span>
-                  <select
-                    value={subEventForm.event_id}
-                    onChange={handleSubEventFormChange('event_id')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  >
-                    <option value="">Select event</option>
-                    {activeEvents.map((eventItem) => (
-                      <option key={eventItem.id} value={eventItem.id}>
-                        {eventItem.titleText}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              ) : (
-                <div className="rounded-3xl border border-white/8 bg-white/4 p-4">
-                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Linked Event</p>
-                  <p className="mt-2 text-sm font-medium text-white">
-                    {selectedSubEvent?.eventTitleText || activeEvents.find((item) => String(item.id) === subEventForm.event_id)?.titleText || 'N/A'}
-                  </p>
-                </div>
-              )}
-
-              <label className="space-y-2 text-sm text-zinc-300">
-                <span>City</span>
-                <select
-                  value={subEventForm.city_id}
-                  onChange={handleSubEventFormChange('city_id')}
-                  className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                >
-                  <option value="">Select city</option>
-                  {activeCities.map((city) => (
-                    <option key={city.id} value={city.id}>
-                      {city.nameText}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Title EN</span>
-                  <input
-                    value={subEventForm.title_en}
-                    onChange={handleSubEventFormChange('title_en')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Title AR/KU</span>
-                  <input
-                    value={subEventForm.title_ar}
-                    onChange={handleSubEventFormChange('title_ar')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
+              ))
+            ) : (
+              <div className="rounded-3xl border border-dashed border-white/10 bg-white/3 p-5 text-sm text-zinc-500">
+                No sub-events matched the current filters.
               </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Sub Title EN</span>
-                  <input
-                    value={subEventForm.sub_title_en}
-                    onChange={handleSubEventFormChange('sub_title_en')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Sub Title AR/KU</span>
-                  <input
-                    value={subEventForm.sub_title_ar}
-                    onChange={handleSubEventFormChange('sub_title_ar')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Description EN</span>
-                  <textarea
-                    rows="4"
-                    value={subEventForm.description_en}
-                    onChange={handleSubEventFormChange('description_en')}
-                    className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-white outline-none"
-                  />
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Description AR/KU</span>
-                  <textarea
-                    rows="4"
-                    value={subEventForm.description_ar}
-                    onChange={handleSubEventFormChange('description_ar')}
-                    className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-white outline-none"
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Location EN</span>
-                  <input
-                    value={subEventForm.location_en}
-                    onChange={handleSubEventFormChange('location_en')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Location AR/KU</span>
-                  <input
-                    value={subEventForm.location_ar}
-                    onChange={handleSubEventFormChange('location_ar')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-3">
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Date</span>
-                  <input
-                    type="date"
-                    value={subEventForm.date}
-                    onChange={handleSubEventFormChange('date')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Start Time</span>
-                  <input
-                    type="time"
-                    value={subEventForm.start_time}
-                    onChange={handleSubEventFormChange('start_time')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>End Time</span>
-                  <input
-                    type="time"
-                    value={subEventForm.end_time}
-                    onChange={handleSubEventFormChange('end_time')}
-                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-                  />
-                </label>
-              </div>
-
-              <button
-                type="submit"
-                disabled={saving.subEvent}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-5 py-3 text-sm font-semibold text-zinc-900 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Save size={16} />
-                {saving.subEvent ? 'Saving...' : subEventMode === 'edit' ? 'Save sub-event' : 'Create sub-event'}
-              </button>
-            </form>
-          </section>
-        </div>
+            )}
+          </div>
+        </section>
       </section>
+
+      <CountryFormDrawer
+        isOpen={activeDrawer === 'country'}
+        mode={countryMode}
+        selectedCountry={selectedCountry}
+        form={countryForm}
+        saving={saving.country}
+        deleting={deletingId.country === selectedCountry?.id}
+        onClose={closeDrawer}
+        onSubmit={handleCountrySubmit}
+        onFieldChange={handleCountryFormChange}
+        onDelete={handleDeleteCountry}
+      />
+
+      <CityFormDrawer
+        isOpen={activeDrawer === 'city'}
+        mode={cityMode}
+        selectedCity={selectedCity}
+        countries={countryOptions}
+        form={cityForm}
+        saving={saving.city}
+        deleting={deletingId.city === selectedCity?.id}
+        onClose={closeDrawer}
+        onSubmit={handleCitySubmit}
+        onFieldChange={handleCityFormChange}
+        onDelete={handleDeleteCity}
+      />
+
+      <SubEventFormDrawer
+        isOpen={activeDrawer === 'subEvent'}
+        mode={subEventMode}
+        selectedSubEvent={selectedSubEvent}
+        cities={cityOptions}
+        events={activeEvents}
+        form={subEventForm}
+        saving={saving.subEvent}
+        deleting={deletingId.subEvent === selectedSubEvent?.id}
+        onClose={closeDrawer}
+        onSubmit={handleSubEventSubmit}
+        onFieldChange={handleSubEventFormChange}
+        onDelete={handleDeleteSubEvent}
+      />
     </div>
   )
 }

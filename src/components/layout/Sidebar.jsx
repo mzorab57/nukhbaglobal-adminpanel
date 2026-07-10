@@ -2,11 +2,17 @@ import { NavLink } from 'react-router-dom'
 import { primaryNavigation } from '../../lib/navigation'
 import BrandMark from '../ui/BrandMark'
 
-export default function Sidebar() {
+export default function Sidebar({ mobile = false, onNavigate, className = '' }) {
   return (
-    <aside className="panel-surface panel-border panel-shadow hidden h-[calc(100vh-2rem)] lg:h-[calc(100vh-3rem)] w-[320px] shrink-0 rounded-[2rem] p-6 lg:flex lg:flex-col sticky top-4 lg:top-6">
-      <BrandMark />
-      <div className="mt-10 space-y-2">
+    <aside
+      className={`panel-surface panel-border panel-shadow ${
+        mobile
+          ? 'flex h-full w-full flex-col rounded-none border-l border-white/10 p-4 sm:max-w-sm sm:rounded-l-[2rem] sm:p-5'
+          : 'sticky top-4 hidden h-[calc(100vh-2rem)] w-[320px] shrink-0 rounded-[2rem] p-6 lg:top-6 lg:flex lg:h-[calc(100vh-3rem)] lg:flex-col'
+      } ${className}`}
+    >
+      <BrandMark compact={mobile} />
+      <div className={`space-y-2 overflow-y-auto ${mobile ? 'mt-6 overflow-y-auto pr-1' : 'mt-10'}`}>
         {primaryNavigation.map((item) => {
           const Icon = item.icon
 
@@ -14,8 +20,9 @@ export default function Sidebar() {
             <NavLink
               key={item.title}
               to={item.href}
+              onClick={onNavigate}
               className={({ isActive }) =>
-                `block w-full rounded-2xl px-4 py-4 text-left transition ${
+                `block w-full rounded-2xl px-4 py-2 text-left transition  ${
                   isActive
                     ? 'bg-gradient-to-r from-amber-300/18 to-white/5 text-white gold-ring'
                     : 'text-zinc-400 hover:bg-white/4 hover:text-white'
@@ -41,13 +48,7 @@ export default function Sidebar() {
           )
         })}
       </div>
-      <div className="mt-auto rounded-3xl border border-amber-200/10 bg-gradient-to-br from-amber-300/10 to-transparent p-5">
-        <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55">Phase 2</p>
-        <h3 className="mt-3 text-lg font-semibold text-white">Live Overview</h3>
-        <p className="mt-2 text-sm leading-6 text-zinc-400">
-          Secure backend login and live dashboard metrics are now wired into the admin shell.
-        </p>
-      </div>
+     
     </aside>
   )
 }

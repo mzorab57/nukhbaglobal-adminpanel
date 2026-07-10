@@ -5,13 +5,10 @@ import {
   Eye,
   EyeOff,
   Image as ImageIcon,
-  Link2,
   PencilLine,
   Plus,
-  RefreshCcw,
   Save,
   Search,
-  Sparkles,
   Trash2,
 } from 'lucide-react'
 import ImageUploadField from '../components/ui/ImageUploadField'
@@ -191,6 +188,11 @@ export default function FeaturedContentPage() {
     [categoryOptions, form.category],
   )
 
+  const activeFilterCategoryMeta = useMemo(
+    () => categoryOptions.find((option) => option.key === filters.category) ?? null,
+    [categoryOptions, filters.category],
+  )
+
   const groupedItems = useMemo(() => {
     return items.reduce((groups, item) => {
       const key = item.category || 'uncategorized'
@@ -202,6 +204,8 @@ export default function FeaturedContentPage() {
       return groups
     }, {})
   }, [items])
+
+  const groupedEntries = useMemo(() => Object.entries(groupedItems), [groupedItems])
 
   const handleEdit = (item) => {
     setMode('edit')
@@ -358,26 +362,34 @@ export default function FeaturedContentPage() {
 
   return (
     <div className="space-y-8 text-zinc-100">
-      <section className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55">Website Media</p>
-          <h1 className="mt-3 text-3xl font-semibold text-white">Dynamic Banner & Section Library</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400">
-            Manage hero sliders, page banners, and reusable visual assets for website sections from one
-            premium workspace.
-          </p>
+      <section className="panel-surface panel-shadow rounded-[2rem] p-5 sm:p-6">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
+          <div className="max-w-3xl">
+            <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Website Content</p>
+            <h1 className="mt-3 text-2xl font-semibold text-amber-100/70 sm:text-3xl">Featured Media Library</h1>
+            <p className="mt-3 text-sm leading-6 text-zinc-500">
+              Manage hero banners, section visuals, and reusable media blocks with a cleaner editor and a responsive asset library.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[320px]">
+            <div className="rounded-3xl border border-white/8 bg-black/20 px-4 py-4">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Visible groups</p>
+              <p className="mt-2 text-lg font-semibold text-white">{formatNumber(groupedEntries.length)}</p>
+              <p className="mt-1 text-xs text-zinc-500">Category sections in the current view</p>
+            </div>
+            <div className="rounded-3xl border border-white/8 bg-black/20 px-4 py-4">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Editor mode</p>
+              <p className="mt-2 text-lg font-semibold text-white">{mode === 'edit' ? 'Editing item' : 'Creating item'}</p>
+              <p className="mt-1 text-xs text-zinc-500">
+                {selectedItem ? `#${selectedItem.id} in ${selectedItem.category}` : 'Ready for a new media item'}
+              </p>
+            </div>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={() => loadMedia()}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-200 transition hover:border-amber-200/20 hover:text-white"
-        >
-          <RefreshCcw size={16} />
-          Refresh Library
-        </button>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           eyebrow="Inventory"
           title="Managed assets"
@@ -404,185 +416,224 @@ export default function FeaturedContentPage() {
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[0.72fr_1.28fr]">
-        <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Editor</p>
-              <h2 className="mt-2 text-xl font-semibold text-white">
-                {mode === 'edit' ? 'Update Media Item' : 'Create Media Item'}
-              </h2>
-            </div>
-            <button
-              type="button"
-              onClick={resetForm}
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-300 transition hover:text-white"
-            >
-              <Plus size={15} />
-              New
-            </button>
-          </div>
-
-          <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
-            <div className="grid gap-4">
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Category</span>
-                <input
-                  list="media-category-options"
-                  value={form.category}
-                  onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
-                  placeholder="home_hero"
-                  className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
-                />
-              </label>
-
-              <datalist id="media-category-options">
-                {categoryOptions.map((option) => (
-                  <option key={option.key} value={option.key}>
-                    {option.label}
-                  </option>
-                ))}
-              </datalist>
-
-              <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-xs">
-                <span className="text-zinc-400">Behavior</span>
-                <span className={`rounded-full border px-3 py-1 font-medium ${toneForBehavior(selectedCategoryMeta?.behavior)}`}>
-                  {selectedCategoryMeta?.behavior === 'single' ? 'Single banner' : 'Ordered collection'}
-                </span>
-                <span className="text-zinc-500">{selectedCategoryMeta?.label || 'Custom category'}</span>
+      <section className="grid gap-6 xl:grid-cols-[minmax(320px,0.78fr)_minmax(0,1.22fr)] 2xl:grid-cols-[minmax(360px,0.72fr)_minmax(0,1.28fr)]">
+        <div className="space-y-6 xl:sticky xl:top-6 xl:self-start">
+          <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-5 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Editor</p>
+                <h2 className="mt-2 text-xl font-semibold text-white">
+                  {mode === 'edit' ? 'Update Media Item' : 'Create Media Item'}
+                </h2>
               </div>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-300 transition hover:text-white sm:w-auto"
+              >
+                <Plus size={15} />
+                New
+              </button>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Title EN</span>
-                <input
-                  value={form.title_en}
-                  onChange={(event) => setForm((current) => ({ ...current, title_en: event.target.value }))}
-                  className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
-                />
-              </label>
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Title AR</span>
-                <input
-                  value={form.title_ar}
-                  onChange={(event) => setForm((current) => ({ ...current, title_ar: event.target.value }))}
-                  className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <ImageUploadField
-                label="Desktop Image"
-                value={form.desktop_image}
-                uploading={uploading.desktop}
-                onFileSelect={(file) => handleUpload('desktop', file)}
-                onClear={() => setForm((current) => ({ ...current, desktop_image: '' }))}
-                hint="Upload the desktop version for widescreen sections."
-              />
-              <ImageUploadField
-                label="Mobile Image"
-                value={form.mobile_image}
-                uploading={uploading.mobile}
-                onFileSelect={(file) => handleUpload('mobile', file)}
-                onClear={() => setForm((current) => ({ ...current, mobile_image: '' }))}
-                hint="Upload the mobile version for smaller breakpoints."
-              />
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">CTA Label EN</span>
-                <input
-                  value={form.cta_label_en}
-                  onChange={(event) => setForm((current) => ({ ...current, cta_label_en: event.target.value }))}
-                  className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
-                />
-              </label>
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">CTA Label AR</span>
-                <input
-                  value={form.cta_label_ar}
-                  onChange={(event) => setForm((current) => ({ ...current, cta_label_ar: event.target.value }))}
-                  className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
-                />
-              </label>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-[1fr_160px_160px]">
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">CTA URL</span>
-                <input
-                  value={form.cta_url}
-                  onChange={(event) => setForm((current) => ({ ...current, cta_url: event.target.value }))}
-                  placeholder="/about or https://..."
-                  className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
-                />
-              </label>
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Sort Order</span>
-                <input
-                  value={form.sort_order}
-                  onChange={(event) => setForm((current) => ({ ...current, sort_order: event.target.value }))}
-                  inputMode="numeric"
-                  className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
-                />
-              </label>
-              <label className="space-y-2">
-                <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Status</span>
-                <select
-                  value={form.status}
-                  onChange={(event) => setForm((current) => ({ ...current, status: event.target.value }))}
-                  className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
-                >
-                  <option value="1">Visible</option>
-                  <option value="0">Hidden</option>
-                </select>
-              </label>
-            </div>
-
-            {error ? (
-              <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-                {error}
+            {selectedItem ? (
+              <div className="mt-6 rounded-3xl border border-white/8 bg-black/20 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Selected item</p>
+                    <h3 className="mt-2 truncate text-base font-semibold text-white">
+                      {selectedItem.titleText || 'Visual asset without title'}
+                    </h3>
+                    <p className="mt-2 text-xs text-zinc-500">
+                      #{selectedItem.id} · {selectedItem.categoryLabel || selectedItem.category}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <span className={`rounded-full border px-3 py-1 text-xs font-medium ${toneForStatus(selectedItem.status)}`}>
+                      {selectedItem.status ? 'Visible' : 'Hidden'}
+                    </span>
+                    <span className={`rounded-full border px-3 py-1 text-xs font-medium ${toneForBehavior(selectedItem.behavior)}`}>
+                      {selectedItem.behavior === 'single' ? 'Single banner' : 'Collection'}
+                    </span>
+                  </div>
+                </div>
               </div>
             ) : null}
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                type="submit"
-                disabled={saving || uploading.desktop || uploading.mobile}
-                className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300/90 to-amber-100 px-5 py-3 text-sm font-medium text-black transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                <Save size={16} />
-                {saving ? 'Saving...' : uploading.desktop || uploading.mobile ? 'Uploading...' : mode === 'edit' ? 'Save Changes' : 'Create Item'}
-              </button>
-              {selectedItem ? (
-                <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">
-                  Editing #{selectedItem.id} in {selectedItem.category}
-                </p>
+            <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
+              <div className="grid gap-4">
+                <label className="space-y-2">
+                  <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Category</span>
+                  <input
+                    list="media-category-options"
+                    value={form.category}
+                    onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}
+                    placeholder="home_hero"
+                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
+                  />
+                </label>
+
+                <datalist id="media-category-options">
+                  {categoryOptions.map((option) => (
+                    <option key={option.key} value={option.key}>
+                      {option.label}
+                    </option>
+                  ))}
+                </datalist>
+
+                <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-white/8 bg-black/20 px-4 py-3 text-xs">
+                  <span className="text-zinc-400">Behavior</span>
+                  <span className={`rounded-full border px-3 py-1 font-medium ${toneForBehavior(selectedCategoryMeta?.behavior)}`}>
+                    {selectedCategoryMeta?.behavior === 'single' ? 'Single banner' : 'Ordered collection'}
+                  </span>
+                  <span className="text-zinc-500">{selectedCategoryMeta?.label || 'Custom category'}</span>
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Title EN</span>
+                  <input
+                    value={form.title_en}
+                    onChange={(event) => setForm((current) => ({ ...current, title_en: event.target.value }))}
+                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Title AR</span>
+                  <input
+                    value={form.title_ar}
+                    onChange={(event) => setForm((current) => ({ ...current, title_ar: event.target.value }))}
+                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <ImageUploadField
+                  label="Desktop Image"
+                  value={form.desktop_image}
+                  uploading={uploading.desktop}
+                  onFileSelect={(file) => handleUpload('desktop', file)}
+                  onClear={() => setForm((current) => ({ ...current, desktop_image: '' }))}
+                  hint="Upload the desktop version for widescreen sections."
+                />
+                <ImageUploadField
+                  label="Mobile Image"
+                  value={form.mobile_image}
+                  uploading={uploading.mobile}
+                  onFileSelect={(file) => handleUpload('mobile', file)}
+                  onClear={() => setForm((current) => ({ ...current, mobile_image: '' }))}
+                  hint="Upload the mobile version for smaller breakpoints."
+                />
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="space-y-2">
+                  <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">CTA Label EN</span>
+                  <input
+                    value={form.cta_label_en}
+                    onChange={(event) => setForm((current) => ({ ...current, cta_label_en: event.target.value }))}
+                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">CTA Label AR</span>
+                  <input
+                    value={form.cta_label_ar}
+                    onChange={(event) => setForm((current) => ({ ...current, cta_label_ar: event.target.value }))}
+                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
+                  />
+                </label>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_160px_160px]">
+                <label className="space-y-2 sm:col-span-2 xl:col-span-1">
+                  <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">CTA URL</span>
+                  <input
+                    value={form.cta_url}
+                    onChange={(event) => setForm((current) => ({ ...current, cta_url: event.target.value }))}
+                    placeholder="/about or https://..."
+                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Sort Order</span>
+                  <input
+                    value={form.sort_order}
+                    onChange={(event) => setForm((current) => ({ ...current, sort_order: event.target.value }))}
+                    inputMode="numeric"
+                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
+                  />
+                </label>
+                <label className="space-y-2">
+                  <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Status</span>
+                  <select
+                    value={form.status}
+                    onChange={(event) => setForm((current) => ({ ...current, status: event.target.value }))}
+                    className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25"
+                  >
+                    <option value="1">Visible</option>
+                    <option value="0">Hidden</option>
+                  </select>
+                </label>
+              </div>
+
+              {error ? (
+                <div className="rounded-2xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                  {error}
+                </div>
               ) : null}
-            </div>
-          </form>
+
+              <div className="flex flex-col gap-3 pt-1 sm:flex-row sm:flex-wrap sm:items-center">
+                <button
+                  type="submit"
+                  disabled={saving || uploading.desktop || uploading.mobile}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300/90 to-amber-100 px-5 py-3 text-sm font-medium text-black transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                >
+                  <Save size={16} />
+                  {saving ? 'Saving...' : uploading.desktop || uploading.mobile ? 'Uploading...' : mode === 'edit' ? 'Save Changes' : 'Create Item'}
+                </button>
+                {selectedItem ? (
+                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">
+                    Editing #{selectedItem.id} in {selectedItem.category}
+                  </p>
+                ) : null}
+              </div>
+            </form>
+          </div>
         </div>
 
         <div className="space-y-6">
-          <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-5 sm:p-6">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Filters</p>
                 <h2 className="mt-2 text-xl font-semibold text-white">Browse categories and assets</h2>
               </div>
-              <div className="flex flex-1 flex-col gap-3 md:flex-row lg:max-w-3xl">
-                <div className="relative flex-1">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
-                  <input
-                    value={filters.q}
-                    onChange={(event) => setFilters((current) => ({ ...current, q: event.target.value }))}
-                    placeholder="Search category, title, or CTA"
-                    className="w-full rounded-2xl border border-white/10 bg-black/20 py-3 pl-11 pr-4 text-sm text-white outline-none transition focus:border-amber-200/25"
-                  />
+              <div className="grid gap-2 text-left sm:grid-cols-2 xl:min-w-[290px]">
+                <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-500">Active filter</p>
+                  <p className="mt-2 text-sm text-zinc-200">{activeFilterCategoryMeta?.label || 'All categories'}</p>
                 </div>
+                <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-500">Results</p>
+                  <p className="mt-2 text-sm text-zinc-200">{loading ? 'Loading...' : `${formatNumber(items.length)} item(s)`}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-3 xl:flex-row xl:items-center">
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={16} />
+                <input
+                  value={filters.q}
+                  onChange={(event) => setFilters((current) => ({ ...current, q: event.target.value }))}
+                  placeholder="Search category, title, or CTA"
+                  className="w-full rounded-2xl border border-white/10 bg-black/20 py-3 pl-11 pr-4 text-sm text-white outline-none transition focus:border-amber-200/25"
+                />
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[360px] xl:grid-cols-[1fr_1fr_auto]">
                 <select
                   value={filters.category}
                   onChange={(event) => setFilters((current) => ({ ...current, category: event.target.value }))}
@@ -604,18 +655,25 @@ export default function FeaturedContentPage() {
                   <option value="1">Visible only</option>
                   <option value="0">Hidden only</option>
                 </select>
+                <button
+                  type="button"
+                  onClick={() => setFilters(INITIAL_FILTERS)}
+                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-zinc-300 transition hover:text-white"
+                >
+                  Reset
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
-            <div className="flex items-center justify-between gap-4">
+          <div className="panel-surface panel-border panel-shadow rounded-[2rem] p-5 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">Library</p>
                 <h2 className="mt-2 text-xl font-semibold text-white">Category items</h2>
               </div>
               <div className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-400">
-                {loading ? 'Loading...' : `${formatNumber(items.length)} item(s)`}
+                {loading ? 'Loading...' : `${formatNumber(groupedEntries.length)} group(s)`}
               </div>
             </div>
 
@@ -627,9 +685,9 @@ export default function FeaturedContentPage() {
                 </div>
               ) : null}
 
-              {Object.entries(groupedItems).map(([category, categoryItems]) => (
-                <div key={category} className="rounded-[1.7rem] border border-white/8 bg-black/10 p-4">
-                  <div className="flex flex-wrap items-center gap-3 border-b border-white/6 pb-4">
+              {groupedEntries.map(([category, categoryItems]) => (
+                <div key={category} className="rounded-[1.7rem] border border-white/8 bg-black/10 p-4 sm:p-5">
+                  <div className="flex flex-col gap-3 border-b border-white/6 pb-4 sm:flex-row sm:flex-wrap sm:items-center">
                     <span className="rounded-full border border-amber-300/15 bg-amber-300/10 px-3 py-1 text-xs font-medium text-amber-100">
                       {categoryItems[0]?.categoryLabel || category}
                     </span>
@@ -648,24 +706,24 @@ export default function FeaturedContentPage() {
                     {categoryItems.map((item, index) => (
                       <article
                         key={item.id}
-                        className="grid gap-4 rounded-[1.5rem] border border-white/8 bg-[#0c0c0f]/80 p-4 lg:grid-cols-[170px_1fr]"
+                        className="grid gap-4 rounded-[1.5rem] border border-white/8 bg-[#0c0c0f]/80 p-4 xl:grid-cols-[180px_minmax(0,1fr)]"
                       >
-                        <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+                        <div className="grid grid-cols-2 gap-3 xl:grid-cols-1">
                           <img
                             src={item.desktopImage}
                             alt={item.titleText || item.categoryLabel}
-                            className="h-24 w-full rounded-2xl object-cover"
+                            className="h-24 w-full rounded-2xl object-cover sm:h-28"
                           />
                           <img
                             src={item.mobileImage}
                             alt={item.titleText || item.categoryLabel}
-                            className="h-24 w-full rounded-2xl object-cover"
+                            className="h-24 w-full rounded-2xl object-cover sm:h-28"
                           />
                         </div>
 
                         <div className="space-y-4">
-                          <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                            <div>
+                          <div className="flex flex-col gap-4 2xl:flex-row 2xl:items-start 2xl:justify-between">
+                            <div className="min-w-0">
                               <div className="flex flex-wrap items-center gap-2">
                                 <span className="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300">
                                   #{item.id}
@@ -743,7 +801,7 @@ export default function FeaturedContentPage() {
                             </div>
                             <div className="rounded-2xl border border-white/8 bg-black/20 px-4 py-3">
                               <p className="text-[10px] uppercase tracking-[0.24em] text-zinc-500">CTA URL</p>
-                              <p className="mt-2 truncate text-sm text-zinc-200">{item.ctaUrl || 'Not provided'}</p>
+                              <p className="mt-2 break-all text-sm text-zinc-200">{item.ctaUrl || 'Not provided'}</p>
                             </div>
                           </div>
                         </div>
@@ -757,38 +815,7 @@ export default function FeaturedContentPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="panel-surface panel-border rounded-3xl p-5">
-          <div className="flex items-center gap-3">
-            <Sparkles className="text-amber-100" size={18} />
-            <h3 className="text-sm font-medium text-white">Suggested categories</h3>
-          </div>
-          <p className="mt-4 text-sm leading-7 text-zinc-400">
-            Use `home_hero`, `about_banner`, `contact_banner`, and `upcoming_visuals` first, then add
-            custom categories as the website grows.
-          </p>
-        </div>
-        <div className="panel-surface panel-border rounded-3xl p-5">
-          <div className="flex items-center gap-3">
-            <ImageIcon className="text-amber-100" size={18} />
-            <h3 className="text-sm font-medium text-white">Responsive assets</h3>
-          </div>
-          <p className="mt-4 text-sm leading-7 text-zinc-400">
-            Every item stores separate desktop and mobile imagery so the frontend can render premium
-            layouts on all breakpoints.
-          </p>
-        </div>
-        <div className="panel-surface panel-border rounded-3xl p-5">
-          <div className="flex items-center gap-3">
-            <Link2 className="text-amber-100" size={18} />
-            <h3 className="text-sm font-medium text-white">Reusable CTA</h3>
-          </div>
-          <p className="mt-4 text-sm leading-7 text-zinc-400">
-            CTA labels and links stay optional, which keeps the same system flexible for hero slides,
-            single banners, and image-only section visuals.
-          </p>
-        </div>
-      </section>
+    
     </div>
   )
 }

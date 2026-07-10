@@ -221,24 +221,14 @@ export default function OfficeSalesPage() {
 
   return (
     <div className="space-y-6 text-white">
-      <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+      <section className="panel-surface  panel-shadow rounded-[2rem] p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55">Office Cash Sales</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">Issue walk-in tickets, then print or save them as PDF.</h1>
-            <p className="mt-3 text-sm leading-7 text-zinc-400">
-              This workspace lets admin and accountant users create cash sales for office customers,
-              issue valid tickets immediately, and open a local print-ready ticket sheet with QR codes.
-            </p>
+            <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55"></p>
+            <h1 className="mt-3 text-xl lg:text-2xl font-semibold text-amber-100/70">Office Cash Sales</h1>
+           
           </div>
-          <button
-            type="button"
-            onClick={resetSaleForm}
-            className="inline-flex items-center gap-2 self-start rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200 transition hover:bg-white/8"
-          >
-            <RefreshCcw size={16} />
-            Reset form
-          </button>
+         
         </div>
       </section>
 
@@ -248,11 +238,11 @@ export default function OfficeSalesPage() {
         </section>
       ) : null}
 
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      {/* <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
         {summaryCards.map((card) => (
           <StatCard key={card.title} eyebrow={card.eyebrow} title={card.title} value={card.value} delta={card.delta} />
         ))}
-      </section>
+      </section> */}
 
       <section className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <form onSubmit={handleCreateCashSale} className="space-y-6">
@@ -460,7 +450,7 @@ export default function OfficeSalesPage() {
             )}
           </div>
 
-          <div className="panel-surface panel-border rounded-[2rem] p-6">
+          {/* <div className="panel-surface panel-border rounded-[2rem] p-6">
             <div className="flex items-center gap-3">
               <Ticket className="text-amber-100" size={18} />
               <div>
@@ -473,7 +463,7 @@ export default function OfficeSalesPage() {
               <p>QR codes are generated locally inside the admin panel, without any external API call.</p>
               <p>Use the print action to print hard copies or choose “Save as PDF” from the browser print dialog.</p>
             </div>
-          </div>
+          </div> */}
         </aside>
       </section>
     </div>

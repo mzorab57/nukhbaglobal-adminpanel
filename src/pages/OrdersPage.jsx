@@ -300,11 +300,11 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-6">
-      <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+      <section className="panel-surface  panel-shadow rounded-[2rem] p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55">Orders Module</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">Orders, payments and detail review.</h1>
+            <p className="text-xs uppercase tracking-[0.35em] "></p>
+            <h1 className="mt-3 text-3xl font-semibold text-amber-100/70">Orders Module</h1>
            
           </div>
      
@@ -624,7 +624,7 @@ export default function OrdersPage() {
                         Passenger: {ticket.passengerName || 'Unassigned'}
                       </p>
                       <p className="mt-1 text-xs text-zinc-500">
-                        {ticket.city?.name || 'No city'}{ticket.subEvent?.titleText ? ` · ${ticket.subEvent.titleText}` : ''} · {formatCurrency(ticket.pricePerItem || 0)}
+                        {ticket.subEvent?.titleText ? `  ${ticket.subEvent.titleText}` : ''} · {formatCurrency(ticket.pricePerItem || 0)}
                       </p>
                       {ticket.scannedAt ? (
                         <p className="mt-1 text-xs text-zinc-500">

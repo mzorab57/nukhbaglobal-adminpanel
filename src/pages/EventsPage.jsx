@@ -9,6 +9,7 @@ import {
   Search,
   Ticket,
   Trash2,
+  XCircle,
 } from 'lucide-react'
 import ImageUploadField from '../components/ui/ImageUploadField'
 import StatCard from '../components/ui/StatCard'
@@ -180,6 +181,11 @@ export default function EventsPage() {
   const [deletingEventId, setDeletingEventId] = useState(null)
   const [deletingTicketId, setDeletingTicketId] = useState(null)
   const [error, setError] = useState('')
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+  const closeDrawer = () => {
+    setIsDrawerOpen(false)
+  }
 
   const handleRequestError = (requestError, fallbackMessage) => {
     if (requestError instanceof ApiError && requestError.status === 401) {
@@ -257,6 +263,7 @@ export default function EventsPage() {
 
     if (!silent) {
       setDetailLoading(true)
+      setIsDrawerOpen(true)
     }
 
     setError('')
@@ -294,6 +301,17 @@ export default function EventsPage() {
     loadCountries()
     loadEvents()
   }, [token])
+
+  useEffect(() => {
+    if (isDrawerOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isDrawerOpen])
 
   const handleFilterChange = (field) => (event) => {
     setFilters((current) => ({
@@ -379,6 +397,7 @@ export default function EventsPage() {
     setTicketMode('create')
     setEditingTicketId(null)
     setError('')
+    setIsDrawerOpen(true)
   }
 
   const handleSubmitEvent = async (event) => {
@@ -550,12 +569,12 @@ export default function EventsPage() {
         value: formatNumber(upcomingCount),
         delta: 'Feed-ready',
       },
-      {
-        eyebrow: 'Inventory',
-        title: 'Visible Capacity',
-        value: formatNumber(totalCapacity),
-        delta: 'Across current rows',
-      },
+      // {
+      //   eyebrow: 'Inventory',
+      //   title: 'Visible Capacity',
+      //   value: formatNumber(totalCapacity),
+      //   delta: 'Across current rows',
+      // },
       {
         eyebrow: 'Demand',
         title: 'Sold Tickets',
@@ -570,14 +589,12 @@ export default function EventsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-6">
+      <section className="panel-surface  panel-shadow rounded-[2rem] p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs uppercase tracking-[0.35em] text-amber-100/55">Events Module</p>
-            <h1 className="mt-3 text-3xl font-semibold text-white">Events, ticket inventory, and public visibility.</h1>
-            <p className="mt-3 text-sm leading-7 text-zinc-400">
-              Manage event publishing, premium imagery, and ticket capacity from one backend-wired workspace.
-            </p>
+            <p className="text-xs uppercase tracking-[0.35em] "></p>
+            <h1 className="mt-3 text-3xl font-semibold text-amber-100/70">Events Module</h1>
+           
           </div>
           <div className="flex flex-wrap gap-3">
             <button
@@ -588,19 +605,7 @@ export default function EventsPage() {
               <Plus size={16} />
               New event
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                loadEvents({ silent: true })
-                if (selectedEventId) {
-                  loadEventWorkspace(selectedEventId, { silent: true })
-                }
-              }}
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-sm text-zinc-200 transition hover:bg-white/8"
-            >
-              <RefreshCcw size={16} />
-              Refresh workspace
-            </button>
+          
           </div>
         </div>
       </section>
@@ -611,13 +616,13 @@ export default function EventsPage() {
         </section>
       )}
 
-      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {summaryCards.map((card) => (
           <StatCard key={card.title} eyebrow={card.eyebrow} title={card.title} value={card.value} delta={card.delta} />
         ))}
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+      <section className="space-y-6">
         <div className="space-y-6">
           <form onSubmit={handleApplyFilters} className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
             <div className="flex items-center gap-2 text-sm font-medium text-white">
@@ -625,7 +630,7 @@ export default function EventsPage() {
               Filters
             </div>
             <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              <label className="space-y-2 text-sm text-zinc-300 xl:col-span-3">
+              <label className="space-y-2 text-sm text-zinc-300 xl:col-span-1">
                 <span>Search</span>
                 <div className="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
                   <Search size={16} className="text-zinc-500" />
@@ -765,10 +770,38 @@ export default function EventsPage() {
             </div>
           </div>
         </div>
+      </section>
 
-        <aside className="space-y-6">
-          <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
-            <div className="flex items-center justify-between gap-3">
+      <div
+        className={`fixed inset-0 z-40 transition-all duration-300 ${
+          isDrawerOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+      >
+        <button
+          type="button"
+          aria-label="Close event drawer"
+          onClick={closeDrawer}
+          className="absolute inset-0 w-full bg-black/50 backdrop-blur-sm"
+        />
+
+        <aside
+          className={`panel-surface panel-border panel-shadow absolute right-0 top-0 h-full w-full max-w-3xl overflow-y-auto border-l border-white/10 p-5 transition-transform duration-300 ease-out ${
+            isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">Event Drawer</p>
+              <h2 className="mt-2 text-xl font-semibold text-white">Details & Actions</h2>
+            </div>
+            <button type="button" onClick={closeDrawer} className="rounded-2xl border border-white/8 bg-white/4 p-2 text-zinc-300 transition hover:bg-white/8">
+              <XCircle size={16} />
+            </button>
+          </div>
+
+          <div className="space-y-6">
+            <section className="panel-surface panel-border panel-shadow rounded-[2rem] p-5">
+              <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.35em] text-zinc-500">
                   {eventMode === 'edit' ? 'Edit Event' : 'Create Event'}
@@ -1225,9 +1258,10 @@ export default function EventsPage() {
                 </form>
               </div>
             )}
-          </section>
+            </section>
+          </div>
         </aside>
-      </section>
+      </div>
     </div>
   )
 }

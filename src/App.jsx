@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedLayout from './components/layout/ProtectedLayout'
 import { canAccessDashboard, canAccessScanner, getDefaultRoute } from './lib/access'
 import DashboardPage from './pages/DashboardPage'
+import ExpensesPage from './pages/ExpensesPage'
 import EventsPage from './pages/EventsPage'
 import FeaturedContentPage from './pages/FeaturedContentPage'
 import LoginPage from './pages/LoginPage'
@@ -10,7 +11,9 @@ import OfficeSalesPage from './pages/OfficeSalesPage'
 import OrdersPage from './pages/OrdersPage'
 import ScannerPage from './pages/ScannerPage'
 import ScansPage from './pages/ScansPage'
+import StallApplicationsPage from './pages/StallApplicationsPage'
 import UsersManagementPage from './pages/UsersManagementPage'
+import VolunteerApplicationsPage from './pages/VolunteerApplicationsPage'
 import { AuthProvider, useAuth } from './lib/auth'
 
 function PublicRoute({ children }) {
@@ -83,11 +86,14 @@ function AppRoutes() {
         }
       >
         <Route index element={<DashboardPage />} />
+        <Route path="expenses" element={<ExpensesPage />} />
         <Route path="events" element={<EventsPage />} />
         <Route path="locations" element={<LocationsPage />} />
         <Route path="office-sales" element={<OfficeSalesPage />} />
         <Route path="orders" element={<OrdersPage />} />
         <Route path="scans" element={<ScansPage />} />
+        <Route path="stalls" element={<StallApplicationsPage />} />
+        <Route path="volunteers" element={<VolunteerApplicationsPage />} />
         <Route path="featured" element={<FeaturedContentPage />} />
         <Route path="users" element={<UsersManagementPage />} />
       </Route>
