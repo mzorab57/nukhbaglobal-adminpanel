@@ -28,10 +28,12 @@ const EMPTY_FORM = {
   category: 'home_hero',
   title_en: '',
   title_ar: '',
+  title_ku: '',
   desktop_image: '',
   mobile_image: '',
   cta_label_en: '',
   cta_label_ar: '',
+  cta_label_ku: '',
   cta_url: '',
   sort_order: '',
   status: '1',
@@ -61,15 +63,16 @@ function toneForBehavior(behavior) {
     : 'border-sky-300/15 bg-sky-400/10 text-sky-100'
 }
 
-function buildNullableTranslations(enValue, arValue) {
+function buildNullableTranslations(enValue, arValue, kuValue) {
   const en = enValue.trim()
   const ar = arValue.trim()
+  const ku = kuValue.trim()
 
-  if (!en && !ar) {
+  if (!en && !ar && !ku) {
     return null
   }
 
-  return { en, ar }
+  return { en, ar, ku }
 }
 
 function mapItemToForm(item) {
@@ -77,10 +80,12 @@ function mapItemToForm(item) {
     category: item.category || 'home_hero',
     title_en: item.title?.en || '',
     title_ar: item.title?.ar || '',
+    title_ku: item.title?.ku || '',
     desktop_image: item.desktopImage || '',
     mobile_image: item.mobileImage || '',
     cta_label_en: item.ctaLabel?.en || '',
     cta_label_ar: item.ctaLabel?.ar || '',
+    cta_label_ku: item.ctaLabel?.ku || '',
     cta_url: item.ctaUrl || '',
     sort_order: item.sortOrder ? String(item.sortOrder) : '',
     status: item.status ? '1' : '0',
@@ -90,10 +95,10 @@ function mapItemToForm(item) {
 function buildPayload(form) {
   return {
     category: form.category.trim(),
-    title: buildNullableTranslations(form.title_en, form.title_ar),
+    title: buildNullableTranslations(form.title_en, form.title_ar, form.title_ku),
     desktop_image: form.desktop_image.trim(),
     mobile_image: form.mobile_image.trim(),
-    cta_label: buildNullableTranslations(form.cta_label_en, form.cta_label_ar),
+    cta_label: buildNullableTranslations(form.cta_label_en, form.cta_label_ar, form.cta_label_ku),
     cta_url: form.cta_url.trim() || null,
     sort_order: form.sort_order.trim() ? Number(form.sort_order) : null,
     status: Number(form.status),
@@ -647,7 +652,7 @@ export default function FeaturedContentPage() {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
               <label className="space-y-2">
                 <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Title EN</span>
                 <input value={form.title_en} onChange={(event) => setForm((current) => ({ ...current, title_en: event.target.value }))} className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25" />
@@ -656,6 +661,10 @@ export default function FeaturedContentPage() {
                 <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Title AR</span>
                 <input value={form.title_ar} onChange={(event) => setForm((current) => ({ ...current, title_ar: event.target.value }))} className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25" />
               </label>
+              <label className="space-y-2">
+                <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">Title KU</span>
+                <input value={form.title_ku} onChange={(event) => setForm((current) => ({ ...current, title_ku: event.target.value }))} className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25" />
+              </label>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -663,7 +672,7 @@ export default function FeaturedContentPage() {
               <ImageUploadField label="Mobile Image" value={form.mobile_image} uploading={uploading.mobile} onFileSelect={(file) => handleUpload('mobile', file)} onClear={() => setForm((current) => ({ ...current, mobile_image: '' }))} hint="Upload the mobile version for smaller breakpoints." />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
               <label className="space-y-2">
                 <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">CTA Label EN</span>
                 <input value={form.cta_label_en} onChange={(event) => setForm((current) => ({ ...current, cta_label_en: event.target.value }))} className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25" />
@@ -671,6 +680,10 @@ export default function FeaturedContentPage() {
               <label className="space-y-2">
                 <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">CTA Label AR</span>
                 <input value={form.cta_label_ar} onChange={(event) => setForm((current) => ({ ...current, cta_label_ar: event.target.value }))} className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25" />
+              </label>
+              <label className="space-y-2">
+                <span className="text-xs uppercase tracking-[0.26em] text-zinc-500">CTA Label KU</span>
+                <input value={form.cta_label_ku} onChange={(event) => setForm((current) => ({ ...current, cta_label_ku: event.target.value }))} className="w-full rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-sm text-white outline-none transition focus:border-amber-200/25" />
               </label>
             </div>
 

@@ -27,8 +27,10 @@ const EMPTY_EVENT_FORM = {
   country_id: '',
   title_en: '',
   title_ar: '',
+  title_ku: '',
   description_en: '',
   description_ar: '',
+  description_ku: '',
   desktop_image: '',
   mobile_image: '',
   date: '',
@@ -39,6 +41,7 @@ const EMPTY_EVENT_FORM = {
 const EMPTY_TICKET_FORM = {
   title_en: '',
   title_ar: '',
+  title_ku: '',
   price: '',
   capacity: '',
   max_per_user: '5',
@@ -78,8 +81,10 @@ function mapEventToForm(event) {
     country_id: event.countryId ? String(event.countryId) : '',
     title_en: event.title?.en || '',
     title_ar: event.title?.ar || '',
+    title_ku: event.title?.ku || '',
     description_en: event.description?.en || '',
     description_ar: event.description?.ar || '',
+    description_ku: event.description?.ku || '',
     desktop_image: event.desktopImage || '',
     mobile_image: event.mobileImage || '',
     date: event.date || '',
@@ -110,6 +115,7 @@ function mapTicketToForm(ticket) {
   return {
     title_en: ticket.title?.en || '',
     title_ar: ticket.title?.ar || '',
+    title_ku: ticket.title?.ku || '',
     price: ticket.price ? String(ticket.price) : '',
     capacity: ticket.capacity ? String(ticket.capacity) : '',
     max_per_user: ticket.maxPerUser ? String(ticket.maxPerUser) : '5',
@@ -127,10 +133,12 @@ function buildEventPayload(form) {
     title: {
       en: form.title_en.trim(),
       ar: form.title_ar.trim(),
+      ku: form.title_ku.trim(),
     },
     description: {
       en: form.description_en.trim(),
       ar: form.description_ar.trim(),
+      ku: form.description_ku.trim(),
     },
     desktop_image: form.desktop_image.trim(),
     mobile_image: form.mobile_image.trim(),
@@ -146,6 +154,7 @@ function buildTicketPayload(form) {
     title: {
       en: form.title_en.trim(),
       ar: form.title_ar.trim(),
+      ku: form.title_ku.trim(),
     },
     price: Number(form.price),
     capacity: Number(form.capacity),
@@ -860,7 +869,7 @@ export default function EventsPage() {
             )}
 
             <form onSubmit={handleSubmitEvent} className="mt-5 space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <label className="space-y-2 text-sm text-zinc-300">
                   <span>Title EN</span>
                   <input
@@ -870,16 +879,24 @@ export default function EventsPage() {
                   />
                 </label>
                 <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Title AR/KU</span>
+                  <span>Title AR</span>
                   <input
                     value={eventForm.title_ar}
                     onChange={handleEventFormChange('title_ar')}
                     className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
                   />
                 </label>
+                <label className="space-y-2 text-sm text-zinc-300">
+                  <span>Title KU</span>
+                  <input
+                    value={eventForm.title_ku}
+                    onChange={handleEventFormChange('title_ku')}
+                    className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
+                  />
+                </label>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid gap-4 md:grid-cols-3">
                 <label className="space-y-2 text-sm text-zinc-300">
                   <span>Description EN</span>
                   <textarea
@@ -890,11 +907,20 @@ export default function EventsPage() {
                   />
                 </label>
                 <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Description AR/KU</span>
+                  <span>Description AR</span>
                   <textarea
                     rows="4"
                     value={eventForm.description_ar}
                     onChange={handleEventFormChange('description_ar')}
+                    className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-white outline-none"
+                  />
+                </label>
+                <label className="space-y-2 text-sm text-zinc-300">
+                  <span>Description KU</span>
+                  <textarea
+                    rows="4"
+                    value={eventForm.description_ku}
+                    onChange={handleEventFormChange('description_ku')}
                     className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-white outline-none"
                   />
                 </label>
@@ -1121,7 +1147,7 @@ export default function EventsPage() {
                     )}
                   </div>
 
-                  <div className="mt-5 grid gap-4 md:grid-cols-2">
+                  <div className="mt-5 grid gap-4 md:grid-cols-3">
                     <label className="space-y-2 text-sm text-zinc-300">
                       <span>Title EN</span>
                       <input
@@ -1131,10 +1157,18 @@ export default function EventsPage() {
                       />
                     </label>
                     <label className="space-y-2 text-sm text-zinc-300">
-                      <span>Title AR/KU</span>
+                      <span>Title AR</span>
                       <input
                         value={ticketForm.title_ar}
                         onChange={handleTicketFormChange('title_ar')}
+                        className="h-12 w-full rounded-2xl border border-white/8 bg-black/10 px-4 text-white outline-none"
+                      />
+                    </label>
+                    <label className="space-y-2 text-sm text-zinc-300">
+                      <span>Title KU</span>
+                      <input
+                        value={ticketForm.title_ku}
+                        onChange={handleTicketFormChange('title_ku')}
                         className="h-12 w-full rounded-2xl border border-white/8 bg-black/10 px-4 text-white outline-none"
                       />
                     </label>

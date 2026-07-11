@@ -57,23 +57,34 @@ export default function CountryFormDrawer({
         ) : null}
 
         <form onSubmit={onSubmit} className="space-y-4">
-          <label className="space-y-2 text-sm text-zinc-300">
-            <span>Name EN</span>
-            <input
-              value={form.name_en}
-              onChange={onFieldChange('name_en')}
-              className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-            />
-          </label>
+          <div className="grid gap-4 md:grid-cols-3">
+            <label className="space-y-2 text-sm text-zinc-300">
+              <span>Name EN</span>
+              <input
+                value={form.name_en}
+                onChange={onFieldChange('name_en')}
+                className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
+              />
+            </label>
 
-          <label className="space-y-2 text-sm text-zinc-300">
-            <span>Name AR/KU</span>
-            <input
-              value={form.name_ar}
-              onChange={onFieldChange('name_ar')}
-              className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
-            />
-          </label>
+            <label className="space-y-2 text-sm text-zinc-300">
+              <span>Name AR</span>
+              <input
+                value={form.name_ar}
+                onChange={onFieldChange('name_ar')}
+                className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
+              />
+            </label>
+
+            <label className="space-y-2 text-sm text-zinc-300">
+              <span>Name KU</span>
+              <input
+                value={form.name_ku}
+                onChange={onFieldChange('name_ku')}
+                className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
+              />
+            </label>
+          </div>
 
           <label className="space-y-2 text-sm text-zinc-300">
             <span>Status</span>

@@ -7,6 +7,7 @@ const PAGE_TITLES = {
   '/dashboard/locations': 'Locations Management',
   '/dashboard/orders': 'Orders & Payments',
   '/dashboard/expenses': 'Expenses Management',
+  '/dashboard/past-events': 'Past Events Management',
   '/dashboard/scans': 'Scan Reports',
   '/dashboard/stalls': 'Stall Applications',
   '/dashboard/volunteers': 'Volunteer Applications',

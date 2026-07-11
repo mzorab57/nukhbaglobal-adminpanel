@@ -28,6 +28,7 @@ const INITIAL_SUB_EVENT_FILTERS = {
 const EMPTY_COUNTRY_FORM = {
   name_en: '',
   name_ar: '',
+  name_ku: '',
   status: '1',
 }
 
@@ -35,6 +36,7 @@ const EMPTY_CITY_FORM = {
   country_id: '',
   name_en: '',
   name_ar: '',
+  name_ku: '',
   status: '1',
 }
 
@@ -43,12 +45,16 @@ const EMPTY_SUB_EVENT_FORM = {
   city_id: '',
   title_en: '',
   title_ar: '',
+  title_ku: '',
   sub_title_en: '',
   sub_title_ar: '',
+  sub_title_ku: '',
   description_en: '',
   description_ar: '',
+  description_ku: '',
   location_en: '',
   location_ar: '',
+  location_ku: '',
   date: '',
   start_time: '',
   end_time: '',
@@ -72,17 +78,18 @@ function toneForStatus(isActive) {
     : 'border-rose-400/15 bg-rose-500/10 text-rose-200'
 }
 
-function buildTranslations(enValue, arValue) {
+function buildTranslations(enValue, arValue, kuValue) {
   return {
     en: enValue.trim(),
     ar: arValue.trim(),
+    ku: kuValue.trim(),
   }
 }
 
-function buildNullableTranslations(enValue, arValue) {
-  const normalized = buildTranslations(enValue, arValue)
+function buildNullableTranslations(enValue, arValue, kuValue) {
+  const normalized = buildTranslations(enValue, arValue, kuValue)
 
-  if (!normalized.en && !normalized.ar) {
+  if (!normalized.en && !normalized.ar && !normalized.ku) {
     return null
   }
 
@@ -93,6 +100,7 @@ function mapCountryToForm(country) {
   return {
     name_en: country.name?.en || '',
     name_ar: country.name?.ar || '',
+    name_ku: country.name?.ku || '',
     status: country.status ? '1' : '0',
   }
 }
@@ -102,6 +110,7 @@ function mapCityToForm(city) {
     country_id: city.countryId ? String(city.countryId) : '',
     name_en: city.name?.en || '',
     name_ar: city.name?.ar || '',
+    name_ku: city.name?.ku || '',
     status: city.status ? '1' : '0',
   }
 }
@@ -112,12 +121,16 @@ function mapSubEventToForm(subEvent) {
     city_id: subEvent.cityId ? String(subEvent.cityId) : '',
     title_en: subEvent.title?.en || '',
     title_ar: subEvent.title?.ar || '',
+    title_ku: subEvent.title?.ku || '',
     sub_title_en: subEvent.subTitle?.en || '',
     sub_title_ar: subEvent.subTitle?.ar || '',
+    sub_title_ku: subEvent.subTitle?.ku || '',
     description_en: subEvent.description?.en || '',
     description_ar: subEvent.description?.ar || '',
+    description_ku: subEvent.description?.ku || '',
     location_en: subEvent.location?.en || '',
     location_ar: subEvent.location?.ar || '',
+    location_ku: subEvent.location?.ku || '',
     date: subEvent.date || '',
     start_time: subEvent.startTime || '',
     end_time: subEvent.endTime || '',
@@ -126,7 +139,7 @@ function mapSubEventToForm(subEvent) {
 
 function buildCountryPayload(form) {
   return {
-    name: buildTranslations(form.name_en, form.name_ar),
+    name: buildTranslations(form.name_en, form.name_ar, form.name_ku),
     status: Number(form.status),
   }
 }
@@ -134,7 +147,7 @@ function buildCountryPayload(form) {
 function buildCityPayload(form) {
   return {
     country_id: Number(form.country_id),
-    name: buildTranslations(form.name_en, form.name_ar),
+    name: buildTranslations(form.name_en, form.name_ar, form.name_ku),
     status: Number(form.status),
   }
 }
@@ -142,10 +155,10 @@ function buildCityPayload(form) {
 function buildSubEventPayload(form) {
   return {
     city_id: Number(form.city_id),
-    title: buildTranslations(form.title_en, form.title_ar),
-    sub_title: buildNullableTranslations(form.sub_title_en, form.sub_title_ar),
-    description: buildTranslations(form.description_en, form.description_ar),
-    location: buildNullableTranslations(form.location_en, form.location_ar),
+    title: buildTranslations(form.title_en, form.title_ar, form.title_ku),
+    sub_title: buildNullableTranslations(form.sub_title_en, form.sub_title_ar, form.sub_title_ku),
+    description: buildTranslations(form.description_en, form.description_ar, form.description_ku),
+    location: buildNullableTranslations(form.location_en, form.location_ar, form.location_ku),
     date: form.date,
     start_time: form.start_time,
     end_time: form.end_time,

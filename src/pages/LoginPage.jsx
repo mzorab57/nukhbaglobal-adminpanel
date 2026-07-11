@@ -43,7 +43,7 @@ export default function LoginPage() {
       <div className="grid-glow absolute inset-0 opacity-40" />
       <div className="absolute inset-y-10 left-10 hidden w-72 rounded-full bg-amber-300/10 blur-3xl lg:block" />
       <div className="absolute right-10 top-10 hidden h-60 w-60 rounded-full bg-indigo-400/10 blur-3xl lg:block" />
-      <div className="relative grid w-full max-w-6xl overflow-hidden rounded-[2rem] panel-border panel-shadow lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="relative grid w-full max-w-6xl overflow-hidden rounded-4xl panel-border panel-shadow lg:grid-cols-[1.1fr_0.9fr]">
         <section className="panel-surface p-8 lg:p-12">
           <BrandMark />
           <div className="mt-16 max-w-xl">

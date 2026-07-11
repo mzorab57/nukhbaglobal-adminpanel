@@ -1,6 +1,7 @@
 import {
   ChartColumnBig,
   CreditCard,
+  FileImage,
   MapPinned,
   NotebookTabs,
   Store,
@@ -36,6 +37,12 @@ export const primaryNavigation = [
     description: 'Track costs, receipts, and categories',
     icon: NotebookTabs,
     href: '/dashboard/expenses',
+  },
+  {
+    title: 'Past Events',
+    description: 'Archive posters, dates, and video links',
+    icon: FileImage,
+    href: '/dashboard/past-events',
   },
   {
     title: 'Events & Tickets',

@@ -93,7 +93,7 @@ export default function SubEventFormDrawer({
             </select>
           </label>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-2 text-sm text-zinc-300">
               <span>Title EN</span>
               <input
@@ -103,16 +103,24 @@ export default function SubEventFormDrawer({
               />
             </label>
             <label className="space-y-2 text-sm text-zinc-300">
-              <span>Title AR/KU</span>
+              <span>Title AR</span>
               <input
                 value={form.title_ar}
                 onChange={onFieldChange('title_ar')}
                 className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
               />
             </label>
+            <label className="space-y-2 text-sm text-zinc-300">
+              <span>Title KU</span>
+              <input
+                value={form.title_ku}
+                onChange={onFieldChange('title_ku')}
+                className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
+              />
+            </label>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-2 text-sm text-zinc-300">
               <span>Sub Title EN</span>
               <input
@@ -122,16 +130,24 @@ export default function SubEventFormDrawer({
               />
             </label>
             <label className="space-y-2 text-sm text-zinc-300">
-              <span>Sub Title AR/KU</span>
+              <span>Sub Title AR</span>
               <input
                 value={form.sub_title_ar}
                 onChange={onFieldChange('sub_title_ar')}
                 className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
               />
             </label>
+            <label className="space-y-2 text-sm text-zinc-300">
+              <span>Sub Title KU</span>
+              <input
+                value={form.sub_title_ku}
+                onChange={onFieldChange('sub_title_ku')}
+                className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
+              />
+            </label>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-2 text-sm text-zinc-300">
               <span>Description EN</span>
               <textarea
@@ -142,7 +158,7 @@ export default function SubEventFormDrawer({
               />
             </label>
             <label className="space-y-2 text-sm text-zinc-300">
-              <span>Description AR/KU</span>
+              <span>Description AR</span>
               <textarea
                 rows="4"
                 value={form.description_ar}
@@ -150,9 +166,18 @@ export default function SubEventFormDrawer({
                 className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-white outline-none"
               />
             </label>
+            <label className="space-y-2 text-sm text-zinc-300">
+              <span>Description KU</span>
+              <textarea
+                rows="4"
+                value={form.description_ku}
+                onChange={onFieldChange('description_ku')}
+                className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-white outline-none"
+              />
+            </label>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <label className="space-y-2 text-sm text-zinc-300">
               <span>Location EN</span>
               <input
@@ -162,10 +187,18 @@ export default function SubEventFormDrawer({
               />
             </label>
             <label className="space-y-2 text-sm text-zinc-300">
-              <span>Location AR/KU</span>
+              <span>Location AR</span>
               <input
                 value={form.location_ar}
                 onChange={onFieldChange('location_ar')}
+                className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
+              />
+            </label>
+            <label className="space-y-2 text-sm text-zinc-300">
+              <span>Location KU</span>
+              <input
+                value={form.location_ku}
+                onChange={onFieldChange('location_ku')}
                 className="h-12 w-full rounded-2xl border border-white/8 bg-white/4 px-4 text-white outline-none"
               />
             </label>

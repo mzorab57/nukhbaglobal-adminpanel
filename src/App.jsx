@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage'
 import LocationsPage from './pages/LocationsPage'
 import OfficeSalesPage from './pages/OfficeSalesPage'
 import OrdersPage from './pages/OrdersPage'
+import PastEventsPage from './pages/PastEventsPage'
 import ScannerPage from './pages/ScannerPage'
 import ScansPage from './pages/ScansPage'
 import StallApplicationsPage from './pages/StallApplicationsPage'
@@ -91,6 +92,7 @@ function AppRoutes() {
         <Route path="locations" element={<LocationsPage />} />
         <Route path="office-sales" element={<OfficeSalesPage />} />
         <Route path="orders" element={<OrdersPage />} />
+        <Route path="past-events" element={<PastEventsPage />} />
         <Route path="scans" element={<ScansPage />} />
         <Route path="stalls" element={<StallApplicationsPage />} />
         <Route path="volunteers" element={<VolunteerApplicationsPage />} />
