@@ -4,7 +4,6 @@ import {
   Filter,
   PencilLine,
   Plus,
-  RefreshCcw,
   Save,
   Search,
   Ticket,
@@ -12,6 +11,7 @@ import {
   XCircle,
 } from 'lucide-react'
 import ImageUploadField from '../components/ui/ImageUploadField'
+import RichTextField, { sanitizeRichText, stripRichText } from '../components/ui/RichTextField'
 import StatCard from '../components/ui/StatCard'
 import { ApiError, apiRequest, uploadImage } from '../lib/api'
 import { useAuth } from '../lib/auth'
@@ -136,9 +136,9 @@ function buildEventPayload(form) {
       ku: form.title_ku.trim(),
     },
     description: {
-      en: form.description_en.trim(),
-      ar: form.description_ar.trim(),
-      ku: form.description_ku.trim(),
+      en: sanitizeRichText(form.description_en),
+      ar: sanitizeRichText(form.description_ar),
+      ku: sanitizeRichText(form.description_ku),
     },
     desktop_image: form.desktop_image.trim(),
     mobile_image: form.mobile_image.trim(),
@@ -333,6 +333,13 @@ export default function EventsPage() {
     setEventForm((current) => ({
       ...current,
       [field]: event.target.value,
+    }))
+  }
+
+  const handleEventRichTextChange = (field) => (nextValue) => {
+    setEventForm((current) => ({
+      ...current,
+      [field]: nextValue,
     }))
   }
 
@@ -562,7 +569,6 @@ export default function EventsPage() {
     const items = eventsPayload?.items ?? []
     const activeCount = items.filter((item) => item.status).length
     const upcomingCount = items.filter((item) => item.upcoming).length
-    const totalCapacity = items.reduce((sum, item) => sum + Number(item.totalCapacity || 0), 0)
     const soldCount = items.reduce((sum, item) => sum + Number(item.soldCount || 0), 0)
 
     return [
@@ -727,7 +733,7 @@ export default function EventsPage() {
                         </td>
                         <td className="px-5 py-4 align-top">
                           <p className="font-medium text-white">{item.countryNameText || 'Global / Unassigned'}</p>
-                          <p className="mt-1 text-xs text-zinc-500">{item.descriptionText || 'No description preview.'}</p>
+                          <p className="mt-1 text-xs text-zinc-500">{stripRichText(item.descriptionText) || 'No description preview.'}</p>
                         </td>
                         <td className="px-5 py-4 align-top">
                           <div className="flex flex-wrap gap-2">
@@ -897,33 +903,27 @@ export default function EventsPage() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-3">
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Description EN</span>
-                  <textarea
-                    rows="4"
-                    value={eventForm.description_en}
-                    onChange={handleEventFormChange('description_en')}
-                    className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-white outline-none"
-                  />
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Description AR</span>
-                  <textarea
-                    rows="4"
-                    value={eventForm.description_ar}
-                    onChange={handleEventFormChange('description_ar')}
-                    className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-white outline-none"
-                  />
-                </label>
-                <label className="space-y-2 text-sm text-zinc-300">
-                  <span>Description KU</span>
-                  <textarea
-                    rows="4"
-                    value={eventForm.description_ku}
-                    onChange={handleEventFormChange('description_ku')}
-                    className="w-full rounded-2xl border border-white/8 bg-white/4 px-4 py-3 text-white outline-none"
-                  />
-                </label>
+                <RichTextField
+                  label="Description EN"
+                  value={eventForm.description_en}
+                  onChange={handleEventRichTextChange('description_en')}
+                  placeholder="Write event summary in English..."
+                  dir="ltr"
+                />
+                <RichTextField
+                  label="Description AR"
+                  value={eventForm.description_ar}
+                  onChange={handleEventRichTextChange('description_ar')}
+                  placeholder="اكتب وصف الفعالية بالعربية..."
+                  dir="rtl"
+                />
+                <RichTextField
+                  label="Description KU"
+                  value={eventForm.description_ku}
+                  onChange={handleEventRichTextChange('description_ku')}
+                  placeholder="وەسفی چالاکی بە کوردی بنووسە..."
+                  dir="rtl"
+                />
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">

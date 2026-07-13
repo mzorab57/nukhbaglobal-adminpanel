@@ -99,7 +99,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-200 to-orange-200 px-5 text-sm font-semibold text-zinc-900 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
+                className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-amber-300 via-amber-200 to-orange-200 px-5 text-sm font-semibold text-zinc-900 transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? 'Signing In...' : 'Enter Dashboard'}
                 <ArrowRight size={16} />

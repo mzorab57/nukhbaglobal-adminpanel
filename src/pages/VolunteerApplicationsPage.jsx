@@ -100,10 +100,10 @@ function mapItemToForm(item) {
 function StatCard({ eyebrow, title, value, delta }) {
   return (
     <article className="rounded-[1.8rem] border border-white/8 bg-[#111115]/80 p-5 lg:p-6">
-      <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">{eyebrow}</p>
+      {/* <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">{eyebrow}</p> */}
       <p className="mt-3 text-2xl font-semibold text-white">{value}</p>
       <p className="mt-2 text-sm text-zinc-400">{title}</p>
-      {delta ? <p className="mt-4 text-xs uppercase tracking-[0.24em] text-zinc-500">{delta}</p> : null}
+      {/* {delta ? <p className="mt-4 text-xs uppercase tracking-[0.24em] text-zinc-500">{delta}</p> : null} */}
     </article>
   )
 }
@@ -267,11 +267,11 @@ export default function VolunteerApplicationsPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard eyebrow="Pipeline" title="All applications" value={formatNumber(stats.total)} delta={`${formatNumber(stats.new)} new`} />
         <StatCard eyebrow="Review" title="Contacted" value={formatNumber(stats.contacted)} delta={`${formatNumber(stats.approved)} approved`} />
         <StatCard eyebrow="Sources" title="Website forms" value={formatNumber(stats.website)} delta={`Admin entries ${formatNumber(stats.admin)}`} />
-        <StatCard eyebrow="Outcomes" title="Rejected" value={formatNumber(stats.rejected)} delta="Needs another pass" />
+        {/* <StatCard eyebrow="Outcomes" title="Rejected" value={formatNumber(stats.rejected)} delta="Needs another pass" /> */}
       </section>
 
       <section className="space-y-6">
